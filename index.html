@@ -756,7 +756,6 @@ vuelva pronto</textarea></div>
       }
     }
 
-    // 🔑 VALIDACIÓN DE LOGIN Y COMPROBACIÓN DE FONDO DE CAJA
     function validarLogin() {
       const uSel = document.getElementById('loginUser').value;
       const passIn = document.getElementById('loginPass').value;
@@ -777,7 +776,6 @@ vuelva pronto</textarea></div>
       let turnoKey = `pos_turno_losfuentes_${cajaActualSeleccionada.replace(/\s+/g, '_')}`;
       let turnoCaja = JSON.parse(localStorage.getItem(turnoKey) || 'null');
 
-      // Solo si la caja YA TIENE UN TURNO ACTIVO entra directo; de lo contrario, SOLICITA EL FONDO DE CAJA
       if (turnoCaja && turnoCaja.activo) {
         switchNav('posView');
       } else {
@@ -1196,10 +1194,13 @@ vuelva pronto</textarea></div>
     }
 
     function cerrarModalCobro() { document.getElementById('cobroModal').classList.remove('active'); focusBarcode(); }
+    
     function calcularCambioCobro() {
-      const total = parseFloat(document.getElementById('modalCobroTotal').innerText.replace('$','')) || 0;
+      const totalStr = document.getElementById('modalCobroTotal').innerText.replace('$', '').trim();
+      const total = parseFloat(totalStr) || 0;
       const paga = parseFloat(document.getElementById('cobroPagaCon').value) || 0;
-      document.getElementById('cobroCambio').innerText = `$${(Math.max(0, paga - total)).toFixed(2)}`;
+      const cambio = Math.max(0, paga - total);
+      document.getElementById('cobroCambio').innerText = `$${cambio.toFixed(2)}`;
     }
 
     function confirmarVenta(imprimir) {
@@ -1210,6 +1211,10 @@ vuelva pronto</textarea></div>
       let costoTotal = t.cart.reduce((a,i) => a + ((i.costo || 0) * i.cantidad), 0);
       let paga = parseFloat(document.getElementById('cobroPagaCon').value) || 0;
 
+      // Redondear a 2 decimales para evitar diferencias por precisión flotante
+      total = Math.round(total * 100) / 100;
+      paga = Math.round(paga * 100) / 100;
+
       if (paga < total) return alert("El monto pagado es menor al total.");
 
       const ventaObj = {
@@ -1218,7 +1223,7 @@ vuelva pronto</textarea></div>
         cajero: usuarioActual.nombre,
         caja: cajaActualSeleccionada,
         subtotal, descuento: desc, total, costo: costoTotal, ganancia: total - costoTotal,
-        pagaCon: paga, cambio: paga - total,
+        pagaCon: paga, cambio: Math.round((paga - total) * 100) / 100,
         items: JSON.parse(JSON.stringify(t.cart))
       };
 
