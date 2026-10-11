@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>eleventa POS Web - Super Toñita</title>
+  <title>eleventa POS Web - Super Toñita (Los Fuentes)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   
@@ -11,27 +11,19 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, doc, setDoc, deleteDoc, getDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+    // 🔑 Credenciales exclusivas de Firebase para Sucursal Los Fuentes
+    const firebaseConfig = {
+      apiKey: "AIzaSyBTObUeDhW8Pvx7OoRnr5BkM7Z0GXB7GrY",
+      authDomain: "pos-los-fuentes.firebaseapp.com",
+      projectId: "pos-los-fuentes",
+      storageBucket: "pos-los-fuentes.firebasestorage.app",
+      messagingSenderId: "1032870325213",
+      appId: "1:1032870325213:web:f3313d84e9cc8f6b61e434",
+      measurementId: "G-EPBW4ZVWYS"
+    };
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBTObUeDhW8Pvx7OoRnr5BkM7Z0GXB7GrY",
-  authDomain: "pos-los-fuentes.firebaseapp.com",
-  projectId: "pos-los-fuentes",
-  storageBucket: "pos-los-fuentes.firebasestorage.app",
-  messagingSenderId: "1032870325213",
-  appId: "1:1032870325213:web:f3313d84e9cc8f6b61e434",
-  measurementId: "G-EPBW4ZVWYS"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
     enableIndexedDbPersistence(db).catch((err) => {
       console.warn("Persistencia Firestore no activada:", err.code);
@@ -130,7 +122,7 @@ const analytics = getAnalytics(app);
   <!-- PANTALLA 1: LOGIN -->
   <div id="loginScreen" class="overlay-screen">
     <div class="card-dialog">
-      <h2>eleventa punto de venta</h2>
+      <h2>eleventa POS - Los Fuentes</h2>
       <div class="field-group">
         <label>Usuario / Cajero:</label>
         <select id="loginUser" onchange="cambioSelectLoginUser()"></select>
@@ -165,7 +157,7 @@ const analytics = getAnalytics(app);
 
   <!-- BARRA SUPERIOR DE NAVEGACIÓN -->
   <div class="top-menu">
-    <div class="brand-title">eleventa <span>punto de venta PRO</span></div>
+    <div class="brand-title">eleventa <span>Super Toñita - Los Fuentes</span></div>
     <div class="nav-buttons">
       <button class="nav-btn active" id="navF1" onclick="switchNav('posView')">🛒 F1 Ventas</button>
       <button class="nav-btn" id="navF3" onclick="switchNav('productsView')">📦 F3 Productos</button>
@@ -176,7 +168,7 @@ const analytics = getAnalytics(app);
       <button class="nav-btn" id="navConfig" onclick="switchNav('configView')">⚙️ Configuración</button>
     </div>
     <div style="font-size: 11px; color: #444; display: flex; align-items: center; gap: 10px;">
-      <span id="netStatusBadge" class="net-status net-online">ONLINE</span>
+      <span id="netStatusBadge" class="net-status net-online">LOS FUENTES</span>
       <div>Atiende: <b id="lblCajeroName">FRANCISCO REYES</b> (<span id="lblCajaBadge">Caja 1</span>)</div>
       <button onclick="cerrarSesion()" style="margin-left: 4px; cursor: pointer;">[Salir]</button>
     </div>
@@ -241,7 +233,7 @@ const analytics = getAnalytics(app);
 
     <!-- VISTA 2: PRODUCTOS -->
     <section id="productsView" class="view-section">
-      <div class="title-bar-yellow">PRODUCTOS</div>
+      <div class="title-bar-yellow">PRODUCTOS - LOS FUENTES</div>
 
       <div class="sub-menu-bar">
         <button class="op-btn" onclick="mostrarSubVistaProd('nuevo')">➕ Nuevo Producto</button>
@@ -485,10 +477,11 @@ const analytics = getAnalytics(app);
           <h3 style="color: var(--accent-blue); margin-bottom: 10px;">🏷️ Personalización del Ticket de Impresión</h3>
           <form id="formConfigTicket" onsubmit="guardarConfigTicket(event)" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
             <div>
-              <div class="field-group"><label>Nombre de la Empresa / Sucursal:</label><input type="text" id="cfgEmpresa" required></div>
-              <div class="field-group"><label>Dirección Física / Ubicación:</label><input type="text" id="cfgDireccion"></div>
+              <div class="field-group"><label>Nombre de la Empresa / Sucursal:</label><input type="text" id="cfgEmpresa" value="Super Toñita - Los Fuentes" required></div>
+              <div class="field-group"><label>Dirección Física / Ubicación:</label><input type="text" id="cfgDireccion" value="Los Fuentes"></div>
               <div class="field-group"><label>RFC / Registro Fiscal / Teléfono:</label><input type="text" id="cfgTelefono"></div>
-              <div class="field-group"><label>Mensaje de Pie de Ticket (Gracias por su compra...):</label><textarea id="cfgMensajePie" rows="3"></textarea></div>
+              <div class="field-group"><label>Mensaje de Pie de Ticket (Gracias por su compra...):</label><textarea id="cfgMensajePie" rows="3">Gracias por su compra
+vuelva pronto</textarea></div>
             </div>
             <div>
               <div class="field-group">
@@ -568,20 +561,21 @@ const analytics = getAnalytics(app);
   </div>
 
   <script>
+    // Claves adaptadas a Los Fuentes para evitar interferencia en localStorage
     let usuarios = [
       { id: "francisco_reyes", nombre: "FRANCISCO REYES", pass: "1234", rol: "admin", cajaAsignada: "Caja 1", permisos: {ventas:true, productos:true, historial:true, corte:true, reportes:true, usuarios:true, config:true} }
     ];
 
-    let departamentos = JSON.parse(localStorage.getItem('pos_deptos') || '["Abarrotes", "Bebidas", "Carnes", "Lácteos"]');
-    let productos = JSON.parse(localStorage.getItem('pos_productos_cache') || "[]");
+    let departamentos = JSON.parse(localStorage.getItem('pos_deptos_losfuentes') || '["Abarrotes", "Bebidas", "Carnes", "Lácteos"]');
+    let productos = JSON.parse(localStorage.getItem('pos_productos_cache_losfuentes') || "[]");
     let tickets = [{ id: 1, nombre: "Ticket 1", cart: [], descuento: 0, tipoDescuento: 'porcentaje', selectedIndex: -1 }];
     let activeTicketId = 1;
-    let historialVentas = JSON.parse(localStorage.getItem('pos_historial_ventas') || "[]");
+    let historialVentas = JSON.parse(localStorage.getItem('pos_historial_ventas_losfuentes') || "[]");
 
-    let configTicket = JSON.parse(localStorage.getItem('pos_config_ticket') || 'null') || {
-      empresa: "Super Toñita",
-      direccion: "Calle Principal #12, Los Fuentes",
-      telefono: "RFC: SUP-020400NO8",
+    let configTicket = JSON.parse(localStorage.getItem('pos_config_ticket_losfuentes') || 'null') || {
+      empresa: "Super Toñita - Los Fuentes",
+      direccion: "Los Fuentes",
+      telefono: "Tel: 0000-0000",
       mensajePie: "Gracias por su compra\nvuelva pronto",
       logoBase64: ""
     };
@@ -628,7 +622,7 @@ const analytics = getAnalytics(app);
       const val = input.value.trim();
       if (val && !departamentos.includes(val)) {
         departamentos.push(val);
-        localStorage.setItem('pos_deptos', JSON.stringify(departamentos));
+        localStorage.setItem('pos_deptos_losfuentes', JSON.stringify(departamentos));
         renderDepartamentosSelect();
         input.value = '';
       }
@@ -637,7 +631,7 @@ const analytics = getAnalytics(app);
     function cargarConfigTicketUI() {
       const emp = document.getElementById('cfgEmpresa');
       if (!emp) return;
-      emp.value = configTicket.empresa || '';
+      emp.value = configTicket.empresa || 'Super Toñita - Los Fuentes';
       document.getElementById('cfgDireccion').value = configTicket.direccion || '';
       document.getElementById('cfgTelefono').value = configTicket.telefono || '';
       document.getElementById('cfgMensajePie').value = configTicket.mensajePie || '';
@@ -679,12 +673,12 @@ const analytics = getAnalytics(app);
       configTicket.telefono = document.getElementById('cfgTelefono').value.trim();
       configTicket.mensajePie = document.getElementById('cfgMensajePie').value.trim();
       
-      localStorage.setItem('pos_config_ticket', JSON.stringify(configTicket));
+      localStorage.setItem('pos_config_ticket_losfuentes', JSON.stringify(configTicket));
 
       if (window.db && window.setDoc && window.doc) {
         try {
           await window.setDoc(window.doc(window.db, "configuracion", "ticket"), configTicket);
-          alert("¡Datos del ticket, teléfono/RFC y logo guardados y sincronizados en la nube!");
+          alert("¡Datos del ticket guardados y sincronizados en Los Fuentes!");
         } catch (err) {
           console.warn("Error al guardar en nube:", err);
           alert("¡Datos del ticket guardados localmente!");
@@ -707,7 +701,7 @@ const analytics = getAnalytics(app);
           window.getDoc(window.doc(window.db, "configuracion", "ticket")).then((docSnap) => {
             if (docSnap.exists() && docSnap.data()) {
               configTicket = docSnap.data();
-              localStorage.setItem('pos_config_ticket', JSON.stringify(configTicket));
+              localStorage.setItem('pos_config_ticket_losfuentes', JSON.stringify(configTicket));
               cargarConfigTicketUI();
             }
           }).catch(err => console.log("Cargando config local..."));
@@ -715,12 +709,17 @@ const analytics = getAnalytics(app);
           window.onSnapshot(window.collection(window.db, "usuarios"), (snapshot) => {
             let loaded = [];
             snapshot.forEach(docSnap => { if (docSnap.data()) loaded.push(docSnap.data()); });
-            if (loaded.length > 0) {
-              if (!loaded.some(u => u.nombre === "FRANCISCO REYES")) loaded.push(usuarios[0]);
-              usuarios = loaded;
+            
+            let adminIndex = loaded.findIndex(u => u.id === "francisco_reyes" || u.nombre === "FRANCISCO REYES");
+            if (adminIndex > -1) {
+              loaded[adminIndex].pass = "1234";
+              loaded[adminIndex].rol = "admin";
+              loaded[adminIndex].permisos = {ventas:true, productos:true, historial:true, corte:true, reportes:true, usuarios:true, config:true};
             } else {
-              window.setDoc(window.doc(window.db, "usuarios", usuarios[0].id), usuarios[0]);
+              loaded.push(usuarios[0]);
             }
+            usuarios = loaded;
+
             renderLoginUsers();
             if (document.getElementById('usuariosView').classList.contains('active')) renderTablaUsuarios();
           });
@@ -728,11 +727,9 @@ const analytics = getAnalytics(app);
           window.onSnapshot(window.collection(window.db, "productos"), (snapshot) => {
             let loaded = [];
             snapshot.forEach(docSnap => loaded.push(docSnap.data()));
-            if (loaded.length > 0) {
-              productos = loaded;
-              localStorage.setItem('pos_productos_cache', JSON.stringify(productos));
-              renderTablaCatalogo();
-            }
+            productos = loaded;
+            localStorage.setItem('pos_productos_cache_losfuentes', JSON.stringify(productos));
+            renderTablaCatalogo();
           });
         }
       }, 200);
@@ -770,7 +767,7 @@ const analytics = getAnalytics(app);
 
       document.getElementById('loginScreen').style.display = 'none';
 
-      let turnoKey = `pos_turno_${cajaActualSeleccionada.replace(/\s+/g, '_')}`;
+      let turnoKey = `pos_turno_losfuentes_${cajaActualSeleccionada.replace(/\s+/g, '_')}`;
       let turnoCaja = JSON.parse(localStorage.getItem(turnoKey) || 'null');
 
       if (usuarioActual.rol === 'admin' || (turnoCaja && turnoCaja.activo)) {
@@ -801,7 +798,7 @@ const analytics = getAnalytics(app);
 
     function iniciarTurnoCaja() {
       const fondo = parseFloat(document.getElementById('fondoInicialInput').value) || 0;
-      let turnoKey = `pos_turno_${cajaActualSeleccionada.replace(/\s+/g, '_')}`;
+      let turnoKey = `pos_turno_losfuentes_${cajaActualSeleccionada.replace(/\s+/g, '_')}`;
       let nuevoTurno = {
         caja: cajaActualSeleccionada,
         fondoInicial: fondo,
@@ -882,7 +879,6 @@ const analytics = getAnalytics(app);
         codigo = parts[1];
       }
 
-      // 🔍 MEJORA: Búsqueda insensible a mayúsculas/minúsculas
       const codigoBusqueda = codigo.trim().toLowerCase();
       const prod = productos.find(p => p.codigo && p.codigo.trim().toLowerCase() === codigoBusqueda);
       const t = getActiveTicket();
@@ -892,7 +888,7 @@ const analytics = getAnalytics(app);
         if (idx > -1) { t.cart[idx].cantidad += cantidad; t.selectedIndex = idx; }
         else { t.cart.push({ ...prod, cantidad }); t.selectedIndex = t.cart.length - 1; }
         renderCart(); renderTicketTabs();
-      } else { alert("Producto no encontrado."); }
+      } else { alert("Producto no encontrado en Los Fuentes."); }
       inputEl.value = '';
       focusBarcode();
     }
@@ -1032,9 +1028,9 @@ const analytics = getAnalytics(app);
       };
       const idx = productos.findIndex(p => p.codigo && p.codigo.toLowerCase() === nuevo.codigo.toLowerCase());
       if (idx > -1) productos[idx] = nuevo; else productos.push(nuevo);
-      localStorage.setItem('pos_productos_cache', JSON.stringify(productos));
+      localStorage.setItem('pos_productos_cache_losfuentes', JSON.stringify(productos));
       if (window.db && window.setDoc && window.doc) window.setDoc(window.doc(window.db, "productos", nuevo.codigo), nuevo);
-      alert("Producto guardado exitosamente.");
+      alert("Producto guardado exitosamente en Los Fuentes.");
       mostrarSubVistaProd('catalogo');
     }
 
@@ -1054,9 +1050,9 @@ const analytics = getAnalytics(app);
     }
 
     function borrarProd(cod) {
-      if (confirm(`¿Eliminar producto ${cod}?`)) {
+      if (confirm(`¿Eliminar producto ${cod} de Los Fuentes?`)) {
         productos = productos.filter(p => !(p.codigo && p.codigo.toLowerCase() === cod.toLowerCase()));
-        localStorage.setItem('pos_productos_cache', JSON.stringify(productos));
+        localStorage.setItem('pos_productos_cache_losfuentes', JSON.stringify(productos));
         if (window.db && window.deleteDoc && window.doc) window.deleteDoc(window.doc(window.db, "productos", cod));
         renderTablaCatalogo();
       }
@@ -1116,7 +1112,7 @@ const analytics = getAnalytics(app);
       if (window.db && window.setDoc && window.doc) {
         try {
           await window.setDoc(window.doc(window.db, "usuarios", id), nuevoUsuario);
-          alert(`¡Cajero ${nombre} guardado y sincronizado exitosamente!`);
+          alert(`¡Cajero ${nombre} guardado y sincronizado en Los Fuentes!`);
         } catch (err) {
           console.warn("Guardado localmente, error en nube:", err);
           alert(`¡Cajero ${nombre} guardado localmente!`);
@@ -1200,9 +1196,9 @@ const analytics = getAnalytics(app);
       };
 
       historialVentas.unshift(ventaObj);
-      localStorage.setItem('pos_historial_ventas', JSON.stringify(historialVentas));
+      localStorage.setItem('pos_historial_ventas_losfuentes', JSON.stringify(historialVentas));
 
-      let turnoKey = `pos_turno_${cajaActualSeleccionada.replace(/\s+/g, '_')}`;
+      let turnoKey = `pos_turno_losfuentes_${cajaActualSeleccionada.replace(/\s+/g, '_')}`;
       let turnoCaja = JSON.parse(localStorage.getItem(turnoKey) || 'null');
       if (turnoCaja) {
         if (!turnoCaja.ventasTurno) turnoCaja.ventasTurno = [];
@@ -1268,7 +1264,7 @@ const analytics = getAnalytics(app);
         </style></head>
         <body>
           ${logoHtml}
-          <div class="center logo-title">${configTicket.empresa || 'Super Toñita'}</div>
+          <div class="center logo-title">${configTicket.empresa || 'Super Toñita - Los Fuentes'}</div>
           
           <div class="center header-info">
             ${configTicket.direccion ? `${configTicket.direccion}<br>` : ''}
@@ -1361,7 +1357,7 @@ const analytics = getAnalytics(app);
 
       const previewDiv = document.getElementById('ticketPreviewContent');
       previewDiv.innerHTML = `
-        <div style="text-align:center; font-family:'Georgia', serif; font-style:italic; font-size:16px; font-weight:bold;">${configTicket.empresa || 'Super Toñita'}</div>
+        <div style="text-align:center; font-family:'Georgia', serif; font-style:italic; font-size:16px; font-weight:bold;">${configTicket.empresa || 'Super Toñita - Los Fuentes'}</div>
         <div style="text-align:center; font-size:10px; color:#555;">${configTicket.direccion || ''}</div>
         <div style="text-align:right; margin:4px 0;">${new Date(ticketSeleccionadoPreview.fecha).toLocaleString()}</div>
         <b>Cajero:</b> ${ticketSeleccionadoPreview.cajero}<br>
@@ -1390,7 +1386,7 @@ const analytics = getAnalytics(app);
       document.getElementById('lblCorteCajaNombre').innerText = cajaActualSeleccionada;
       document.getElementById('lblCorteCajaSub').innerText = cajaActualSeleccionada;
 
-      let turnoKey = `pos_turno_${cajaActualSeleccionada.replace(/\s+/g, '_')}`;
+      let turnoKey = `pos_turno_losfuentes_${cajaActualSeleccionada.replace(/\s+/g, '_')}`;
       let turnoCaja = JSON.parse(localStorage.getItem(turnoKey) || 'null');
 
       let fondo = turnoCaja ? turnoCaja.fondoInicial : 0;
@@ -1413,7 +1409,7 @@ const analytics = getAnalytics(app);
     function cerrarTurno() {
       if (confirm(`¿Deseas cerrar el turno de la ${cajaActualSeleccionada} y entregar la caja?`)) {
         alert("Turno cerrado con éxito. Se ha limpiado el acumulado.");
-        let turnoKey = `pos_turno_${cajaActualSeleccionada.replace(/\s+/g, '_')}`;
+        let turnoKey = `pos_turno_losfuentes_${cajaActualSeleccionada.replace(/\s+/g, '_')}`;
         localStorage.removeItem(turnoKey);
         cerrarSesion();
       }
@@ -1491,7 +1487,7 @@ const analytics = getAnalytics(app);
       const ws = XLSX.utils.json_to_sheet(historialVentas);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-      XLSX.writeFile(wb, `Reporte_Ventas_${new Date().toISOString().slice(0,10)}.xlsx`);
+      XLSX.writeFile(wb, `Reporte_Ventas_LosFuentes_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
     function importarExcelProductos(e) {
@@ -1515,8 +1511,8 @@ const analytics = getAnalytics(app);
             if (window.db && window.setDoc && window.doc) window.setDoc(window.doc(window.db, "productos", codigo), nuevo);
           }
         });
-        localStorage.setItem('pos_productos_cache', JSON.stringify(productos));
-        alert(`¡Éxito! Se importaron ${rows.length} productos.`);
+        localStorage.setItem('pos_productos_cache_losfuentes', JSON.stringify(productos));
+        alert(`¡Éxito! Se importaron ${rows.length} productos a Los Fuentes.`);
         renderTablaCatalogo();
       };
       reader.readAsArrayBuffer(file);
