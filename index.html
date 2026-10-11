@@ -1063,7 +1063,7 @@ const analytics = getAnalytics(app);
     }
 
     function renderTablaCatalogo() {
-      const q = document.getElementById('searchProdTable') ? document.getElementById('searchProdTable'].value.toLowerCase() : '';
+      const q = document.getElementById('searchProdTable') ? document.getElementById('searchProdTable').value.toLowerCase() : '';
       const tbody = document.getElementById('catalogoTableBody');
       if (!tbody) return;
       tbody.innerHTML = productos.filter(p => (p.descripcion && p.descripcion.toLowerCase().includes(q)) || (p.codigo && p.codigo.toLowerCase().includes(q))).map(p => `
