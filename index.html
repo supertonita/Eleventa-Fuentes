@@ -11,6 +11,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, doc, setDoc, deleteDoc, getDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+    // 🔑 Credenciales exclusivas de Firebase para Sucursal Los Fuentes
     const firebaseConfig = {
       apiKey: "AIzaSyBTObUeDhW8Pvx7OoRnr5BkM7Z0GXB7GrY",
       authDomain: "pos-los-fuentes.firebaseapp.com",
@@ -121,7 +122,7 @@
   <!-- PANTALLA 1: LOGIN -->
   <div id="loginScreen" class="overlay-screen">
     <div class="card-dialog">
-      <h2>Super Toñita- Los Fuentes</h2>
+      <h2>eleventa POS - Los Fuentes</h2>
       <div class="field-group">
         <label>Usuario / Cajero:</label>
         <select id="loginUser" onchange="cambioSelectLoginUser()"></select>
@@ -156,7 +157,7 @@
 
   <!-- BARRA SUPERIOR DE NAVEGACIÓN -->
   <div class="top-menu">
-    <div class="brand-title">Super Toñita<span>Los Fuentes</span></div>
+    <div class="brand-title">eleventa <span>Super Toñita - Los Fuentes</span></div>
     <div class="nav-buttons">
       <button class="nav-btn active" id="navF1" onclick="switchNav('posView')">🛒 F1 Ventas</button>
       <button class="nav-btn" id="navF3" onclick="switchNav('productsView')">📦 F3 Productos</button>
@@ -569,6 +570,7 @@ vuelva pronto</textarea></div>
     let tickets = [{ id: 1, nombre: "Ticket 1", cart: [], descuento: 0, tipoDescuento: 'porcentaje', selectedIndex: -1 }];
     let activeTicketId = 1;
     let historialVentas = JSON.parse(localStorage.getItem('pos_historial_ventas_losfuentes') || "[]");
+    let codigoEdicionAnterior = null;
 
     let configTicket = JSON.parse(localStorage.getItem('pos_config_ticket_losfuentes') || 'null') || {
       empresa: "Super Toñita - Los Fuentes",
@@ -586,7 +588,6 @@ vuelva pronto</textarea></div>
     let chartSalesBarInstance = null;
     let chartDeptosInstance = null;
 
-    // 🔍 HELPER MULTICÓDIGO: Verifica si el código buscado coincide con alguno de los códigos asignados
     function productoCoincideConCodigo(producto, codigoBusqueda) {
       if (!producto || !producto.codigo) return false;
       const codigosArr = producto.codigo.split(',').map(c => c.trim().toLowerCase());
@@ -755,6 +756,7 @@ vuelva pronto</textarea></div>
       }
     }
 
+    // 🔑 VALIDACIÓN DE LOGIN Y COMPROBACIÓN DE FONDO DE CAJA
     function validarLogin() {
       const uSel = document.getElementById('loginUser').value;
       const passIn = document.getElementById('loginPass').value;
@@ -775,11 +777,8 @@ vuelva pronto</textarea></div>
       let turnoKey = `pos_turno_losfuentes_${cajaActualSeleccionada.replace(/\s+/g, '_')}`;
       let turnoCaja = JSON.parse(localStorage.getItem(turnoKey) || 'null');
 
-      if (usuarioActual.rol === 'admin' || (turnoCaja && turnoCaja.activo)) {
-        if (!turnoCaja && usuarioActual.rol === 'admin') {
-          turnoCaja = { caja: cajaActualSeleccionada, fondoInicial: 0, horaInicio: new Date().toISOString(), activo: true, ventasTurno: [] };
-          localStorage.setItem(turnoKey, JSON.stringify(turnoCaja));
-        }
+      // Solo si la caja YA TIENE UN TURNO ACTIVO entra directo; de lo contrario, SOLICITA EL FONDO DE CAJA
+      if (turnoCaja && turnoCaja.activo) {
         switchNav('posView');
       } else {
         document.getElementById('lblCajaActualTitulo').innerText = cajaActualSeleccionada;
@@ -884,7 +883,6 @@ vuelva pronto</textarea></div>
         codigo = parts[1];
       }
 
-      // 🔍 Búsqueda con Multicódigo incorporada
       const codigoBusqueda = codigo.trim().toLowerCase();
       const prod = productos.find(p => productoCoincideConCodigo(p, codigoBusqueda));
       const t = getActiveTicket();
@@ -1036,18 +1034,34 @@ vuelva pronto</textarea></div>
         existencia: parseFloat(document.getElementById('pExistencia').value) || 0
       };
 
+      if (codigoEdicionAnterior && codigoEdicionAnterior !== primerCodigo) {
+        productos = productos.filter(p => !productoCoincideConCodigo(p, codigoEdicionAnterior));
+        if (window.db && window.deleteDoc && window.doc) {
+          window.deleteDoc(window.doc(window.db, "productos", codigoEdicionAnterior));
+        }
+      }
+
       const idx = productos.findIndex(p => productoCoincideConCodigo(p, primerCodigo));
       if (idx > -1) productos[idx] = nuevo; else productos.push(nuevo);
+
       localStorage.setItem('pos_productos_cache_losfuentes', JSON.stringify(productos));
-      if (window.db && window.setDoc && window.doc) window.setDoc(window.doc(window.db, "productos", primerCodigo), nuevo);
-      alert("Producto multicódigo guardado exitosamente.");
+      if (window.db && window.setDoc && window.doc) {
+        window.setDoc(window.doc(window.db, "productos", primerCodigo), nuevo);
+      }
+
+      codigoEdicionAnterior = null;
+      alert("¡Producto y códigos actualizados correctamente!");
       mostrarSubVistaProd('catalogo');
     }
 
     function editarProducto(codigo) {
       const p = productos.find(prod => productoCoincideConCodigo(prod, codigo));
       if (!p) return;
-      document.getElementById('pCodigo').value = p.codigo; document.getElementById('pCodigo').readOnly = true;
+      
+      codigoEdicionAnterior = p.codigo.split(',')[0].trim();
+      
+      document.getElementById('pCodigo').value = p.codigo; 
+      document.getElementById('pCodigo').readOnly = false;
       document.getElementById('pDescripcion').value = p.descripcion;
       document.getElementById('pCosto').value = (p.costo || 0).toFixed(2);
       document.getElementById('pGanancia').value = (p.ganancia || 20).toFixed(2);
@@ -1085,12 +1099,14 @@ vuelva pronto</textarea></div>
       if (sub === 'nuevo') {
         if (document.getElementById('prodFormTitle').innerText !== "MODIFICAR PRODUCTO") {
           document.getElementById('formNuevoProd').reset();
-          document.getElementById('pCodigo').readOnly = false;
+          codigoEdicionAnterior = null;
         }
+        document.getElementById('pCodigo').readOnly = false;
         document.getElementById('prodFormSubView').style.display = 'flex';
         document.getElementById('prodCatalogoSubView').style.display = 'none';
       } else {
         document.getElementById('prodFormTitle').innerText = "NUEVO PRODUCTO";
+        codigoEdicionAnterior = null;
         document.getElementById('prodFormSubView').style.display = 'none';
         document.getElementById('prodCatalogoSubView').style.display = 'flex';
         renderTablaCatalogo();
