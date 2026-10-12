@@ -11,7 +11,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, doc, setDoc, deleteDoc, getDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // 🔑 Credenciales exclusivas de Firebase para Sucursal Los Fuentes
+     // 🔑 Credenciales exclusivas de Firebase para Sucursal Los Fuentes
     const firebaseConfig = {
       apiKey: "AIzaSyBTObUeDhW8Pvx7OoRnr5BkM7Z0GXB7GrY",
       authDomain: "pos-los-fuentes.firebaseapp.com",
@@ -21,6 +21,7 @@
       appId: "1:1032870325213:web:f3313d84e9cc8f6b61e434",
       measurementId: "G-EPBW4ZVWYS"
     };
+
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -122,7 +123,7 @@
   <!-- PANTALLA 1: LOGIN -->
   <div id="loginScreen" class="overlay-screen">
     <div class="card-dialog">
-      <h2>eleventa POS - Los Fuentes</h2>
+      <h2>Super Toñita - Los Fuentes</h2>
       <div class="field-group">
         <label>Usuario / Cajero:</label>
         <select id="loginUser" onchange="cambioSelectLoginUser()"></select>
@@ -157,7 +158,7 @@
 
   <!-- BARRA SUPERIOR DE NAVEGACIÓN -->
   <div class="top-menu">
-    <div class="brand-title">eleventa <span>Super Toñita - Los Fuentes</span></div>
+    <div class="brand-title">Super Toñita<span>Los Fuentes</span></div>
     <div class="nav-buttons">
       <button class="nav-btn active" id="navF1" onclick="switchNav('posView')">🛒 F1 Ventas</button>
       <button class="nav-btn" id="navF3" onclick="switchNav('productsView')">📦 F3 Productos</button>
@@ -204,7 +205,7 @@
         <table>
           <thead>
             <tr>
-              <th style="width: 15%;">Código(s)</th>
+              <th style="width: 15%;">Código</th>
               <th style="width: 35%;">Descripción</th>
               <th style="width: 12%;">Precio</th>
               <th style="width: 8%;">Cant.</th>
@@ -376,14 +377,21 @@
       <div class="title-bar-dark">REPORTES Y MÉTRICAS AVANZADAS</div>
       <div class="sub-menu-bar">
         <label><b>Rango Temporal:</b> 
-          <select id="repFiltroTiempo" onchange="actualizarReportes()">
+          <select id="repFiltroTiempo" onchange="toggleRangoFechasReporte()">
             <option value="hoy">Hoy</option>
             <option value="semana">Esta Semana</option>
             <option value="mes" selected>Este Mes</option>
             <option value="anio">Este Año</option>
+            <option value="rango">Personalizado (Rango)</option>
           </select>
         </label>
-        <button class="op-btn" style="background: #28a745; color: #fff;" onclick="exportarReporteExcel()">📥 Exportar Reporte a Excel</button>
+
+        <div id="containerRangoFechas" style="display: none; gap: 6px; align-items: center;">
+          <label><b>Desde:</b> <input type="date" id="repFechaDesde" onchange="actualizarReportes()"></label>
+          <label><b>Hasta:</b> <input type="date" id="repFechaHasta" onchange="actualizarReportes()"></label>
+        </div>
+
+        <button class="op-btn" style="background: #28a745; color: #fff;" onclick="exportarReporteExcelDetallado()">📥 Exportar Reporte a Excel</button>
       </div>
 
       <div style="padding: 15px;">
@@ -526,7 +534,7 @@ vuelva pronto</textarea></div>
       <h2>🔍 Buscador de Productos (Teclas ↑/↓ y ENTER)</h2>
       <input type="text" id="searchBuscadorInput" placeholder="Escribe..." oninput="filtrarBuscadorModal()" style="width:100%; padding:8px; margin-bottom:10px; font-size:14px;">
       <div style="max-height: 320px; overflow-y: auto;" class="table-container">
-        <table><thead><tr><th>Código(s)</th><th>Descripción</th><th>Precio</th><th>Existencia</th></tr></thead><tbody id="buscadorModalTableBody"></tbody></table>
+        <table><thead><tr><th>Código</th><th>Descripción</th><th>Precio</th><th>Existencia</th></tr></thead><tbody id="buscadorModalTableBody"></tbody></table>
       </div>
       <button class="btn-main" style="margin-top:10px; background:#6c757d;" onclick="cerrarBuscadorModal()">Cerrar (ESC)</button>
     </div>
@@ -588,10 +596,21 @@ vuelva pronto</textarea></div>
     let chartSalesBarInstance = null;
     let chartDeptosInstance = null;
 
+    function normalizarCodigo(cadena) {
+      if (!cadena) return "";
+      return String(cadena).trim().toLowerCase().replace(/^0+/, '');
+    }
+
     function productoCoincideConCodigo(producto, codigoBusqueda) {
       if (!producto || !producto.codigo) return false;
-      const codigosArr = producto.codigo.split(',').map(c => c.trim().toLowerCase());
-      return codigosArr.includes(codigoBusqueda.trim().toLowerCase());
+      const codigosArr = producto.codigo.split(',').map(c => normalizarCodigo(c));
+      const busquedaLimpia = normalizarCodigo(codigoBusqueda);
+      return codigosArr.includes(busquedaLimpia);
+    }
+
+    function obtenerPrimerCodigo(codigoRaw) {
+      if (!codigoRaw) return "";
+      return codigoRaw.split(',')[0].trim();
     }
 
     function actualizarPermisosUI() {
@@ -699,6 +718,10 @@ vuelva pronto</textarea></div>
       renderLoginUsers();
       renderTablaUsuarios();
       cargarConfigTicketUI();
+
+      const hoyStr = new Date().toISOString().slice(0, 10);
+      document.getElementById('repFechaDesde').value = hoyStr;
+      document.getElementById('repFechaHasta').value = hoyStr;
 
       const checkFirebase = setInterval(() => {
         if (window.db && window.onSnapshot && window.collection && window.doc && window.getDoc) {
@@ -827,7 +850,7 @@ vuelva pronto</textarea></div>
       if (viewId === 'productsView') { mostrarSubVistaProd('catalogo'); }
       if (viewId === 'historialView') { filtrarHistorialTickets(); }
       if (viewId === 'corteView') { actualizarCorteCaja(); }
-      if (viewId === 'reportesView') { actualizarReportes(); }
+      if (viewId === 'reportesView') { toggleRangoFechasReporte(); }
       if (viewId === 'usuariosView') { renderTablaUsuarios(); }
       if (viewId === 'configView') { cargarConfigTicketUI(); }
     }
@@ -881,7 +904,7 @@ vuelva pronto</textarea></div>
         codigo = parts[1];
       }
 
-      const codigoBusqueda = codigo.trim().toLowerCase();
+      const codigoBusqueda = codigo.trim();
       const prod = productos.find(p => productoCoincideConCodigo(p, codigoBusqueda));
       const t = getActiveTicket();
 
@@ -907,7 +930,7 @@ vuelva pronto</textarea></div>
         subtotal += importe; count += item.cantidad;
         tbody.innerHTML += `
           <tr class="${index === t.selectedIndex ? 'selected-row' : ''}" onclick="seleccionarFilaCarrito(${index})">
-            <td>${item.codigo}</td><td>${item.descripcion}</td><td>$${item.precio.toFixed(2)}</td><td>${item.cantidad}</td><td>$${importe.toFixed(2)}</td>
+            <td>${obtenerPrimerCodigo(item.codigo)}</td><td>${item.descripcion}</td><td>$${item.precio.toFixed(2)}</td><td>${item.cantidad}</td><td>$${importe.toFixed(2)}</td>
             <td>
               <button class="op-btn" onclick="modCantidad(${index}, 1); event.stopPropagation();">+</button>
               <button class="op-btn" onclick="modCantidad(${index}, -1); event.stopPropagation();">-</button>
@@ -989,19 +1012,24 @@ vuelva pronto</textarea></div>
     function cerrarBuscadorModal() { document.getElementById('buscadorModal').classList.remove('active'); focusBarcode(); }
     function filtrarBuscadorModal() {
       const q = document.getElementById('searchBuscadorInput').value.toLowerCase();
-      buscadorResultados = productos.filter(p => (p.descripcion && p.descripcion.toLowerCase().includes(q)) || (p.codigo && p.codigo.toLowerCase().includes(q)));
+      const qLimpio = normalizarCodigo(q);
+      buscadorResultados = productos.filter(p => {
+        const descMatch = p.descripcion && p.descripcion.toLowerCase().includes(q);
+        const codMatch = p.codigo && p.codigo.split(',').some(c => normalizarCodigo(c).includes(qLimpio));
+        return descMatch || codMatch;
+      });
       buscadorSelectedIndex = 0; renderTablaBuscadorModal();
     }
     function renderTablaBuscadorModal() {
       const tbody = document.getElementById('buscadorModalTableBody');
       tbody.innerHTML = buscadorResultados.map((p, index) => `
         <tr class="${index === buscadorSelectedIndex ? 'selected-row' : ''}" onclick="seleccionarProdBuscadorDirecto(${index})">
-          <td>${p.codigo}</td><td>${p.descripcion}</td><td>$${(p.precio || 0).toFixed(2)}</td><td>${p.existencia}</td>
+          <td>${obtenerPrimerCodigo(p.codigo)}</td><td>${p.descripcion}</td><td>$${(p.precio || 0).toFixed(2)}</td><td>${p.existencia}</td>
         </tr>
       `).join('');
     }
     function seleccionarProdBuscadorDirecto(idx) {
-      if (buscadorResultados[idx]) { document.getElementById('barcodeInput').value = buscadorResultados[idx].codigo.split(',')[0].trim(); agregarProductoEnter(); cerrarBuscadorModal(); }
+      if (buscadorResultados[idx]) { document.getElementById('barcodeInput').value = obtenerPrimerCodigo(buscadorResultados[idx].codigo); agregarProductoEnter(); cerrarBuscadorModal(); }
     }
 
     function recalcularPrecios(origen) {
@@ -1083,9 +1111,15 @@ vuelva pronto</textarea></div>
 
     function renderTablaCatalogo() {
       const q = document.getElementById('searchProdTable') ? document.getElementById('searchProdTable').value.toLowerCase() : '';
+      const qLimpio = normalizarCodigo(q);
       const tbody = document.getElementById('catalogoTableBody');
       if (!tbody) return;
-      tbody.innerHTML = productos.filter(p => (p.descripcion && p.descripcion.toLowerCase().includes(q)) || (p.codigo && p.codigo.toLowerCase().includes(q))).map(p => `
+      
+      tbody.innerHTML = productos.filter(p => {
+        const descMatch = p.descripcion && p.descripcion.toLowerCase().includes(q);
+        const codMatch = p.codigo && p.codigo.split(',').some(c => normalizarCodigo(c).includes(qLimpio));
+        return descMatch || codMatch;
+      }).map(p => `
         <tr>
           <td>${p.codigo}</td><td>${p.descripcion}</td><td>$${(p.costo || 0).toFixed(2)}</td><td>$${(p.precio || 0).toFixed(2)}</td><td>$${((p.precio || 0) - (p.costo || 0)).toFixed(2)}</td><td>${p.departamento || 'Abarrotes'}</td><td>${p.existencia}</td>
           <td><button class="op-btn" onclick="editarProducto('${p.codigo.split(',')[0].trim()}')">✏️ Editar</button><button class="op-btn" style="color:red;" onclick="borrarProd('${p.codigo.split(',')[0].trim()}')">🗑️ Del</button></td>
@@ -1211,7 +1245,6 @@ vuelva pronto</textarea></div>
       let costoTotal = t.cart.reduce((a,i) => a + ((i.costo || 0) * i.cantidad), 0);
       let paga = parseFloat(document.getElementById('cobroPagaCon').value) || 0;
 
-      // Redondear a 2 decimales para evitar diferencias por precisión flotante
       total = Math.round(total * 100) / 100;
       paga = Math.round(paga * 100) / 100;
 
@@ -1257,7 +1290,7 @@ vuelva pronto</textarea></div>
       
       const logoHtml = configTicket.logoBase64 
         ? `<div class="center"><img src="${configTicket.logoBase64}" style="max-width: 100px; filter: grayscale(100%); margin-bottom: 5px;"></div>` 
-        : `<div class="center" style="font-size:30px; line-height:1;">🛒</div>`;
+        : `<div class="center" style="font-size:32px; line-height:1;">🛒</div>`;
 
       const d = new Date(venta.fecha);
       const fechaStr = d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -1273,7 +1306,7 @@ vuelva pronto</textarea></div>
             width: ${widthPx}; 
             margin: 0 auto; 
             padding: 8px; 
-            font-size: 12px; 
+            font-size: 13px; 
             color: #000;
             background: #fff;
           }
@@ -1281,18 +1314,18 @@ vuelva pronto</textarea></div>
           .right { text-align: right; }
           .left { text-align: left; }
           .bold { font-weight: bold; }
-          .logo-title { font-family: 'Georgia', serif; font-style: italic; font-size: 18px; font-weight: bold; margin-top: 4px; }
-          .header-info { margin-top: 6px; font-size: 11px; line-height: 1.2; }
-          .date-line { text-align: right; margin: 8px 0 6px 0; font-size: 11px; }
-          .meta-info { font-size: 11px; line-height: 1.3; }
+          .logo-title { font-family: 'Georgia', serif; font-style: italic; font-size: 19px; font-weight: bold; margin-top: 4px; }
+          .header-info { margin-top: 6px; font-size: 12px; line-height: 1.2; }
+          .date-line { text-align: right; margin: 8px 0 6px 0; font-size: 12px; }
+          .meta-info { font-size: 12px; line-height: 1.3; }
           .separator-double { font-weight: bold; letter-spacing: -1px; overflow: hidden; white-space: nowrap; margin: 4px 0; }
           
-          table.items-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 2px; }
-          table.items-table td { padding: 1px 0; vertical-align: top; }
+          table.items-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 2px; }
+          table.items-table td { padding: 2px 0; vertical-align: top; }
           
-          .totals-block { margin-top: 10px; text-align: right; font-size: 12px; line-height: 1.4; }
-          .totals-block .big-total { font-size: 15px; font-weight: bold; }
-          .footer-msg { text-align: center; margin-top: 15px; font-size: 11px; line-height: 1.3; white-space: pre-line; }
+          .totals-block { margin-top: 10px; text-align: right; font-size: 13px; line-height: 1.4; }
+          .totals-block .big-total { font-size: 16px; font-weight: bold; }
+          .footer-msg { text-align: center; margin-top: 15px; font-size: 12px; line-height: 1.3; white-space: pre-line; }
         </style></head>
         <body>
           ${logoHtml}
@@ -1334,15 +1367,15 @@ vuelva pronto</textarea></div>
             `).join('')}
           </table>
 
-          <div style="margin-top: 12px; font-size: 11px; text-align: center;">
+          <div style="margin-top: 12px; font-size: 12px; text-align: center;">
             No. de Articulos: ${totalArticulos}
           </div>
 
           <div class="totals-block">
             <div class="big-total">Total: $${venta.total.toFixed(2)}</div>
-            <div style="font-weight: bold; font-size: 13px;">Pago Con: $${venta.pagaCon.toFixed(2)}</div>
-            <div style="font-weight: bold; font-size: 13px;">Su Cambio: $${venta.cambio.toFixed(2)}</div>
-            ${venta.descuento > 0 ? `<div style="font-weight: bold; font-size: 12px;">Usted ahorro: $${venta.descuento.toFixed(2)}</div>` : ''}
+            <div style="font-weight: bold; font-size: 14px;">Pago Con: $${venta.pagaCon.toFixed(2)}</div>
+            <div style="font-weight: bold; font-size: 14px;">Su Cambio: $${venta.cambio.toFixed(2)}</div>
+            ${venta.descuento > 0 ? `<div style="font-weight: bold; font-size: 13px;">Usted ahorro: $${venta.descuento.toFixed(2)}</div>` : ''}
           </div>
 
           <div class="footer-msg">
@@ -1447,17 +1480,41 @@ vuelva pronto</textarea></div>
       }
     }
 
-    function actualizarReportes() {
+    function toggleRangoFechasReporte() {
+      const filtro = document.getElementById('repFiltroTiempo').value;
+      const containerRango = document.getElementById('containerRangoFechas');
+      if (filtro === 'rango') {
+        containerRango.style.display = 'flex';
+      } else {
+        containerRango.style.display = 'none';
+      }
+      actualizarReportes();
+    }
+
+    function obtenerVentasFiltradasReporte() {
       const filtro = document.getElementById('repFiltroTiempo').value;
       const ahora = new Date();
-      let ventasFiltradas = historialVentas.filter(v => {
+
+      return historialVentas.filter(v => {
         const fVenta = new Date(v.fecha);
         if (filtro === 'hoy') return fVenta.toDateString() === ahora.toDateString();
         if (filtro === 'semana') { const h = new Date(); h.setDate(ahora.getDate() - 7); return fVenta >= h; }
         if (filtro === 'mes') return fVenta.getMonth() === ahora.getMonth() && fVenta.getFullYear() === ahora.getFullYear();
         if (filtro === 'anio') return fVenta.getFullYear() === ahora.getFullYear();
+        if (filtro === 'rango') {
+          const dVal = document.getElementById('repFechaDesde').value;
+          const hVal = document.getElementById('repFechaHasta').value;
+          if (!dVal || !hVal) return true;
+          const fDesde = new Date(dVal + "T00:00:00");
+          const fHasta = new Date(hVal + "T23:59:59");
+          return fVenta >= fDesde && fVenta <= fHasta;
+        }
         return true;
       });
+    }
+
+    function actualizarReportes() {
+      let ventasFiltradas = obtenerVentasFiltradasReporte();
 
       let totalVentas = 0, totalGanancia = 0;
       let mapProds = {}, mapDeptos = {};
@@ -1515,11 +1572,139 @@ vuelva pronto</textarea></div>
       });
     }
 
-    function exportarReporteExcel() {
-      const ws = XLSX.utils.json_to_sheet(historialVentas);
+    // EXPORTACIÓN A EXCEL DETALLADA CON TOTALES Y ENCABEZADOS EN NEGRITA
+    function exportarReporteExcelDetallado() {
+      let ventasFiltradas = obtenerVentasFiltradasReporte();
+      if (ventasFiltradas.length === 0) return alert("No hay ventas registradas en el rango seleccionado.");
+
+      let mapProds = {};
+      let granTotalVentaNeta = 0;
+      let granTotalUtilidad = 0;
+      let granTotalCantidad = 0;
+      let granTotalCostoTotal = 0;
+
+      ventasFiltradas.forEach(v => {
+        v.items.forEach(i => {
+          let codKey = obtenerPrimerCodigo(i.codigo);
+          if (!mapProds[codKey]) {
+            mapProds[codKey] = {
+              codigo: codKey,
+              nombre: i.descripcion,
+              marca: i.departamento || 'General',
+              cantidad: 0,
+              costoUnitario: i.costo || 0,
+              precioUnitario: i.precio || 0,
+              costoTotal: 0,
+              ventaNetaTotal: 0,
+              utilidad: 0
+            };
+          }
+
+          let cant = i.cantidad;
+          let ventaNeta = i.precio * cant;
+          let costoTot = (i.costo || 0) * cant;
+          let util = ventaNeta - costoTot;
+
+          mapProds[codKey].cantidad += cant;
+          mapProds[codKey].costoTotal += costoTot;
+          mapProds[codKey].ventaNetaTotal += ventaNeta;
+          mapProds[codKey].utilidad += util;
+
+          granTotalCantidad += cant;
+          granTotalCostoTotal += costoTot;
+          granTotalVentaNeta += ventaNeta;
+          granTotalUtilidad += util;
+        });
+      });
+
+      const filtro = document.getElementById('repFiltroTiempo').value;
+      let textoRango = "";
+      if (filtro === 'rango') {
+        const d = document.getElementById('repFechaDesde').value.split('-').reverse().join('/');
+        const h = document.getElementById('repFechaHasta').value.split('-').reverse().join('/');
+        textoRango = `DEL ${d} AL ${h}`;
+      } else {
+        textoRango = `PERIODO: ${filtro.toUpperCase()}`;
+      }
+
+      let dataSheet = [
+        [configTicket.empresa || "SUPER TOÑITA - LOS FUENTES"],
+        ["REPORTE DE UTILIDAD POR PRODUCTO"],
+        [textoRango],
+        [], 
+        [
+          "CÓDIGO", 
+          "NOMBRE DEL PRODUCTO", 
+          "MARCA", 
+          "CANTIDAD", 
+          "COSTO UNITARIO", 
+          "COSTO TOTAL", 
+          "V. NETA X UNIDAD", 
+          "VENTA NETA TOTAL", 
+          "UTILIDAD", 
+          "PORCENTAJE", 
+          "PARTICIPACIÓN GLOBAL VENTA NETA", 
+          "PARTICIPACIÓN GLOBAL UTILIDAD"
+        ]
+      ];
+
+      Object.values(mapProds).forEach(p => {
+        let porcUtil = p.ventaNetaTotal > 0 ? (p.utilidad / p.ventaNetaTotal) : 0;
+        let partVenta = granTotalVentaNeta > 0 ? (p.ventaNetaTotal / granTotalVentaNeta) : 0;
+        let partUtil = granTotalUtilidad > 0 ? (p.utilidad / granTotalUtilidad) : 0;
+
+        dataSheet.push([
+          p.codigo,
+          p.nombre,
+          p.marca,
+          p.cantidad,
+          p.costoUnitario,
+          p.costoTotal,
+          p.precioUnitario,
+          p.ventaNetaTotal,
+          p.utilidad,
+          porcUtil,
+          partVenta,
+          partUtil
+        ]);
+      });
+
+      // Fila de TOTALES al pie[cite: 3]
+      let porcUtilGlobal = granTotalVentaNeta > 0 ? (granTotalUtilidad / granTotalVentaNeta) : 0;
+      dataSheet.push([
+        "", 
+        "TOTALES", 
+        "", 
+        granTotalCantidad, 
+        "", 
+        granTotalCostoTotal, 
+        "", 
+        granTotalVentaNeta, 
+        granTotalUtilidad, 
+        porcUtilGlobal, 
+        1.0, 
+        1.0
+      ]);
+
+      const ws = XLSX.utils.aoa_to_sheet(dataSheet);
+
+      // Aplicar negrita a los encabezados de la tabla (Fila 5, índice 4) y formato de totales
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellHeader = ws[XLSX.utils.encode_cell({ r: 4, c: C })];
+        if (cellHeader) {
+          cellHeader.s = { font: { bold: true } };
+        }
+        // Fila de totales en negrita
+        const cellTotales = ws[XLSX.utils.encode_cell({ r: range.e.r, c: C })];
+        if (cellTotales) {
+          cellTotales.s = { font: { bold: true } };
+        }
+      }
+
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-      XLSX.writeFile(wb, `Reporte_Ventas_LosFuentes_${new Date().toISOString().slice(0,10)}.xlsx`);
+      XLSX.utils.book_append_sheet(wb, ws, "Utilidad_Por_Producto");
+      XLSX.writeFile(wb, `Reporte_Utilidad_LosFuentes_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
     function importarExcelProductos(e) {
