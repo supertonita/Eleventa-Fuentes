@@ -1497,7 +1497,7 @@ vuelva pronto</textarea></div>
       document.getElementById('listaSugerenciasClientes').style.display = 'none';
     }
 
-    // --- COBRO INTELIGENTE CON MENSAJE SERIO Y FORMAL SIN EMOJIS ---
+    // --- COBRO INTELIGENTE CON APERTURA DIRECTA DE LA APP DE ESCRITORIO DE WHATSAPP ---
     async function ejecutarCobroInteligente(imprimirPapel) {
       let telefono = document.getElementById('inputCobroTelefono').value.replace(/\s+/g, '').replace(/-/g, '').trim();
       let nombreCliente = document.getElementById('inputCobroNombre').value.trim();
@@ -1522,6 +1522,12 @@ vuelva pronto</textarea></div>
 
       // 4. Registrar o actualizar cliente en Firestore si hay teléfono válido
       if (telefono && telefono.length >= 7) {
+        // Formatear código de país para El Salvador (+503) si no se incluyó
+        let telefonoCompleto = telefono;
+        if (!telefonoCompleto.startsWith('503') && telefonoCompleto.length === 8) {
+          telefonoCompleto = '503' + telefonoCompleto;
+        }
+
         const clienteExistente = registeredClients.find(c => c.phone === telefono);
         if (!clienteExistente && window.db && window.addDoc && window.collection) {
           try {
@@ -1538,8 +1544,6 @@ vuelva pronto</textarea></div>
         }
 
         const puntosGanados = Math.floor(ventaObj.total);
-        
-        // Enlace exacto a tu archivo ticket.html en GitHub Pages
         const enlaceTicketWeb = `https://supertonita.github.io/Eleventa-Fuentes/ticket.html?folio=${folioUnico}`;
 
         // MENSAJE FORMAL, SOBRIO Y SIN EMOJIS
@@ -1552,8 +1556,11 @@ vuelva pronto</textarea></div>
           `${enlaceTicketWeb}\n\n` +
           `_Estamos para servirle. Esperamos verle pronto._`;
 
-        const urlWhatsApp = `https://web.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensajeWhatsApp)}`;
-        window.open(urlWhatsApp, 'whatsapp_web_window');
+        // 🚀 PROTOCOLO NATIVO PARA INVOCAR LA APP DE ESCRITORIO EN TU PC
+        const urlWhatsAppApp = `whatsapp://send?phone=${telefonoCompleto}&text=${encodeURIComponent(mensajeWhatsApp)}`;
+        
+        // Ejecución directa para abrir la app instalada
+        window.location.href = urlWhatsAppApp;
       }
     }
 
