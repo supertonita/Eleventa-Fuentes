@@ -1454,7 +1454,6 @@ vuelva pronto</textarea></div>
       document.getElementById('cobroCambio').innerText = `$${cambio.toFixed(2)}`;
     }
 
-    // --- BUSCADOR INTELIGENTE POR TELÉFONO O NOMBRE ---
     function buscarClientePorTelefono() {
       const val = document.getElementById('inputCobroTelefono').value.toLowerCase().trim();
       const contenedor = document.getElementById('listaSugerenciasClientes');
@@ -1502,18 +1501,30 @@ vuelva pronto</textarea></div>
       document.getElementById('listaSugerenciasClientes').style.display = 'none';
     }
 
-    // --- COBRO INTELIGENTE: F1 (Imprime), F2 (No imprime), y Wpp optimizado sin abrir múltiples links ---
+    // --- COBRO INTELIGENTE CON FOLIO UNIFICADO ---
     async function ejecutarCobroInteligente(imprimirPapel) {
       let telefono = document.getElementById('inputCobroTelefono').value.replace(/\s+/g, '').replace(/-/g, '').trim();
       let nombreCliente = document.getElementById('inputCobroNombre').value.trim();
 
       if (!nombreCliente) nombreCliente = "Cliente Los Fuentes";
 
-      // 1. Procesamos y guardamos la venta
-      const ventaObj = procesarYGuardarVenta(imprimirPapel); 
+      // 1. FOLIO UNIFICADO EXACTO PARA TODO EL FLUJO
+      const folioUnico = `TK-${Date.now().toString().slice(-6)}`;
+
+      // 2. Procesamos y guardamos la venta pasándole el folio único
+      const ventaObj = procesarYGuardarVentaConFolio(imprimirPapel, folioUnico); 
       if (!ventaObj) return;
 
-      // 2. Guardar o actualizar automáticamente en Firestore si hay teléfono válido
+      // 3. Guardar ticket en la colección tickets_digitales usando ese folio exacto como ID
+      if (window.db && window.setDoc && window.doc) {
+        try {
+          await window.setDoc(window.doc(window.db, "tickets_digitales", folioUnico), ventaObj);
+        } catch (e) {
+          console.warn("Error al guardar ticket digital en nube:", e);
+        }
+      }
+
+      // 4. Registrar o actualizar cliente en Firestore si hay teléfono válido
       if (telefono && telefono.length >= 7) {
         const clienteExistente = registeredClients.find(c => c.phone === telefono);
         if (!clienteExistente && window.db && window.addDoc && window.collection) {
@@ -1534,8 +1545,10 @@ vuelva pronto</textarea></div>
         const fechaStr = d.toLocaleDateString('es-ES') + ' ' + d.toLocaleTimeString('es-US', { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase();
         const totalArticulos = ventaObj.items.reduce((acc, i) => acc + i.cantidad, 0);
         const puntosGanados = Math.floor(ventaObj.total);
-// Enlace exclusivo para consultar el ticket digital en WhatsApp con tu URL correcta
-        const enlaceTicketWeb = `https://supertonita.github.io/Eleventa-Fuentes/ticket.html?folio=${ventaObj.folio}`;
+        
+        // Enlace exacto a tu archivo ticket.html en GitHub Pages
+        const enlaceTicketWeb = `https://supertonita.github.io/Eleventa-Fuentes/ticket.html?folio=${folioUnico}`;
+
         let itemsTexto = ventaObj.items.map(i => 
           `• ${i.cantidad.toFixed(2)}${i.unidad === 'LB' ? 'lb' : ''} x ${i.descripcion} ---- $${(i.cantidad * i.precio).toFixed(2)}`
         ).join('\n');
@@ -1546,7 +1559,7 @@ vuelva pronto</textarea></div>
           `-----------------------------------\n` +
           `📅 *Fecha:* ${fechaStr}\n` +
           `👤 *Cajero:* ${ventaObj.cajero}\n` +
-          `📄 *Folio:* ${ventaObj.folio}\n` +
+          `📄 *Folio:* ${folioUnico}\n` +
           `-----------------------------------\n` +
           `*CANT. / PRODUCTO / IMPORTE*\n` +
           `${itemsTexto}\n` +
@@ -1560,13 +1573,12 @@ vuelva pronto</textarea></div>
           `🔗 *Ver ticket digital y canjear puntos aquí:*\n${enlaceTicketWeb}\n\n` +
           `_¡Gracias por tu compra en Super Toñita!_`;
 
-        // Uso limpio de WhatsApp Web para reutilizar pestaña y evitar múltiples redirecciones pesadas
         const urlWhatsApp = `https://web.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensajeWhatsApp)}`;
         window.open(urlWhatsApp, 'whatsapp_web_window');
       }
     }
 
-    function procesarYGuardarVenta(imprimir) {
+    function procesarYGuardarVentaConFolio(imprimir, folioUnico) {
       const t = getActiveTicket();
       if (t.cart.length === 0) { alert("El carrito está vacío."); return null; }
       let subtotal = t.cart.reduce((a,i) => a + ((i.precioAplicado !== undefined ? i.precioAplicado : i.precio) * i.cantidad), 0);
@@ -1586,7 +1598,7 @@ vuelva pronto</textarea></div>
       }));
 
       const ventaObj = {
-        folio: `TK-${Date.now().toString().slice(-6)}`,
+        folio: folioUnico,
         fecha: new Date().toISOString(),
         cajero: usuarioActual.nombre,
         caja: cajaActualSeleccionada,
@@ -1620,7 +1632,7 @@ vuelva pronto</textarea></div>
       return ventaObj;
     }
 
-    // --- IMPRESIÓN DIRECTA CON TEXTO CLARO, LOGO Y QR GIGANTES VÁLIDOS PARA LA WEB ---
+    // --- IMPRESIÓN TÉRMICA CON QR JSON Y ENLACE WEB ---
     function imprimirTicketTermico(venta) {
       const ancho = document.getElementById('printerWidthSelect').value;
       const widthPx = (ancho === '58mm') ? '210px' : '270px';
@@ -1635,9 +1647,8 @@ vuelva pronto</textarea></div>
       
       const totalArticulos = venta.items.reduce((acc, i) => acc + i.cantidad, 0);
       const puntosGanados = Math.floor(venta.total); 
-      const urlTiendaBase = "https://supertonita.github.io/mi-tienda-online/";
+      const urlTiendaBase = "https://supertonita.github.io/Eleventa-Fuentes/";
       
-      // FORMATO JSON EXACTO QUE ESPERA TU WEB EN claimPoints() PARA VALIDAR LOS PUNTOS AL ESCANEAR
       const datosCanjeJSON = JSON.stringify({
         id: venta.folio,
         total: parseFloat(venta.total.toFixed(2)),
@@ -1715,7 +1726,6 @@ vuelva pronto</textarea></div>
         </div>
       `;
 
-      // Generación de QRs Gigantes (200x200 px) para escaneo veloz
       new QRCode(document.getElementById("qrTiendaInline"), { 
         text: urlTiendaBase, 
         width: 200, 
@@ -1723,7 +1733,6 @@ vuelva pronto</textarea></div>
         correctLevel: QRCode.CorrectLevel.M 
       });
 
-      // El QR de puntos ahora codifica el objeto JSON exacto que tu web procesa sin marcar ticket inválido
       new QRCode(document.getElementById("qrPuntosInline"), { 
         text: datosCanjeJSON, 
         width: 200, 
