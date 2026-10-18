@@ -113,7 +113,7 @@
 
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; }
     .modal-overlay.active { display: flex; }
-    .cobro-dialog { background: #e8eef5; border: 1px solid #7f9db9; width: 640px; display: flex; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; }
+    .cobro-dialog { background: #e8eef5; border: 1px solid #7f9db9; width: 680px; display: flex; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; }
     .cobro-main { flex: 2; padding: 20px; background: #f4f7fa; border-right: 1px solid #c0cbd9; }
     .cobro-sidebar { flex: 1; padding: 15px; background: #e8eef5; display: flex; flex-direction: column; gap: 8px; }
 
@@ -615,17 +615,26 @@ vuelva pronto</textarea></div>
         <div style="font-weight: bold; color: var(--accent-blue); margin-bottom: 5px;">COBRAR</div>
         <div style="font-size: 38px; font-weight: bold; color: #1d528d; text-align: center; margin-bottom: 12px;" id="modalCobroTotal">$0.00</div>
         
-        <!-- BÚSQUEDA RÁPIDA DE CLIENTES PARA WHATSAPP -->
-        <div style="margin: 6px 0; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
-          <label style="font-size: 11px; font-weight: bold; color: #1d528d;">CLIENTE PARA WHATSAPP (OPCIONAL - BÚSQUEDA / NÚMERO):</label>
-          <div style="position: relative;">
-            <input type="text" id="inputBuscarClienteWpp" placeholder="Si escribes o seleccionas, se enviará Wpp..." autocomplete="off" oninput="filtrarClientesWpp()" style="width: 100%; padding: 5px; font-size: 12px; border: 1px solid #7f9db9;">
-            <div id="listaSugerenciasWpp" style="position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #7f9db9; max-height: 100px; overflow-y: auto; display: none; z-index: 50; font-size: 11px;"></div>
+        <!-- CAMPOS SEPARADOS DE TELÉFONO Y NOMBRE CON BUSCADOR INTELIGENTE -->
+        <div style="margin: 6px 0; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid #ccc; position: relative;">
+          <label style="font-size: 11px; font-weight: bold; color: #1d528d; margin-bottom: 6px; display: block;">DATOS DEL CLIENTE (BÚSQUEDA AUTOMÁTICA O NUEVO):</label>
+          
+          <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+            <div style="flex: 1;">
+              <label style="font-size: 10px; color: #555;">Número de Teléfono:</label>
+              <input type="tel" id="inputCobroTelefono" placeholder="Ej: 70092996" autocomplete="off" oninput="buscarClientePorTelefono()" style="width: 100%; padding: 5px; font-size: 12px; border: 1px solid #7f9db9;">
+            </div>
+            <div style="flex: 1.5;">
+              <label style="font-size: 10px; color: #555;">Nombre del Cliente:</label>
+              <input type="text" id="inputCobroNombre" placeholder="Ej: Juan Pérez" autocomplete="off" oninput="buscarClientePorNombre()" style="width: 100%; padding: 5px; font-size: 12px; border: 1px solid #7f9db9;">
+            </div>
           </div>
-          <input type="hidden" id="telefonoClienteWppSelected" value="">
+
+          <!-- LISTA FLOTANTE DE SUGERENCIAS Y COINCIDENCIAS -->
+          <div id="listaSugerenciasClientes" style="position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #7f9db9; max-height: 120px; overflow-y: auto; display: none; z-index: 50; font-size: 11px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></div>
         </div>
 
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 10px;">
           <div><label style="font-size: 14px; font-weight: bold;">Pagó Con: $</label><input type="number" id="cobroPagaCon" step="0.01" style="font-size: 18px; font-weight: bold; width: 130px; text-align: right;" oninput="calcularCambioCobro()"></div>
           <div style="font-weight: bold; font-size: 16px;">Su Cambio: <span id="cobroCambio" style="color: #1d528d;">$0.00</span></div>
         </div>
@@ -651,7 +660,6 @@ vuelva pronto</textarea></div>
     let activeTicketId = 1;
     let historialVentas = JSON.parse(localStorage.getItem('pos_historial_ventas_losfuentes') || "[]");
     let codigoEdicionAnterior = null;
-    let clienteSeleccionadoParaWpp = { nombre: "Cliente", telefono: "" };
 
     let configTicket = JSON.parse(localStorage.getItem('pos_config_ticket_losfuentes') || 'null') || {
       empresa: "Super Toñita - Los Fuentes",
@@ -900,7 +908,7 @@ vuelva pronto</textarea></div>
             snapshot.forEach(docSnap => {
               const d = docSnap.data();
               if (d && d.name && d.phone) {
-                loadedClients.push({ name: d.name, phone: d.phone });
+                loadedClients.push({ id: docSnap.id, name: d.name, phone: d.phone, points: d.points || 0 });
               }
             });
             registeredClients = loadedClients;
@@ -1427,10 +1435,9 @@ vuelva pronto</textarea></div>
       const inputPaga = document.getElementById('cobroPagaCon');
       inputPaga.value = total.toFixed(2);
       
-      document.getElementById('inputBuscarClienteWpp').value = '';
-      document.getElementById('telefonoClienteWppSelected').value = '';
-      document.getElementById('listaSugerenciasWpp').style.display = 'none';
-      clienteSeleccionadoParaWpp = { nombre: "Cliente", telefono: "" };
+      document.getElementById('inputCobroTelefono').value = '';
+      document.getElementById('inputCobroNombre').value = '';
+      document.getElementById('listaSugerenciasClientes').style.display = 'none';
 
       document.getElementById('cobroModal').classList.add('active');
       setTimeout(() => { inputPaga.focus(); inputPaga.select(); }, 150);
@@ -1447,24 +1454,35 @@ vuelva pronto</textarea></div>
       document.getElementById('cobroCambio').innerText = `$${cambio.toFixed(2)}`;
     }
 
-    function filtrarClientesWpp() {
-      const query = document.getElementById('inputBuscarClienteWpp').value.toLowerCase().trim();
-      const contenedor = document.getElementById('listaSugerenciasWpp');
+    // --- BUSCADOR INTELIGENTE POR TELÉFONO O NOMBRE ---
+    function buscarClientePorTelefono() {
+      const val = document.getElementById('inputCobroTelefono').value.toLowerCase().trim();
+      const contenedor = document.getElementById('listaSugerenciasClientes');
       
-      if (!isNaN(query) && query.length >= 7) {
-        document.getElementById('telefonoClienteWppSelected').value = query;
-        clienteSeleccionadoParaWpp = { nombre: "Cliente", telefono: query };
-      }
-
-      if (!query || query.length < 2) {
+      if (!val || val.length < 2) {
         contenedor.style.display = 'none';
         return;
       }
 
-      const coincidencias = registeredClients.filter(c => 
-        c.name.toLowerCase().includes(query) || c.phone.includes(query)
-      );
+      const coincidencias = registeredClients.filter(c => c.phone.toLowerCase().includes(val));
+      mostrarSugerenciasClientes(coincidencias);
+    }
 
+    function buscarClientePorNombre() {
+      const val = document.getElementById('inputCobroNombre').value.toLowerCase().trim();
+      const contenedor = document.getElementById('listaSugerenciasClientes');
+      
+      if (!val || val.length < 2) {
+        contenedor.style.display = 'none';
+        return;
+      }
+
+      const coincidencias = registeredClients.filter(c => c.name.toLowerCase().includes(val));
+      mostrarSugerenciasClientes(coincidencias);
+    }
+
+    function mostrarSugerenciasClientes(coincidencias) {
+      const contenedor = document.getElementById('listaSugerenciasClientes');
       if (coincidencias.length === 0) {
         contenedor.style.display = 'none';
         return;
@@ -1472,35 +1490,30 @@ vuelva pronto</textarea></div>
 
       contenedor.style.display = 'block';
       contenedor.innerHTML = coincidencias.map(c => `
-        <div onclick="seleccionarClienteWpp('${c.name}', '${c.phone}')" style="padding: 6px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f4f9'" onmouseout="this.style.background='#fff'">
-          <b>${c.name}</b> - <span style="color:#555;">${c.phone}</span>
+        <div onclick="seleccionarClienteSugerido('${c.name.replace(/'/g, "\\'")}', '${c.phone}')" style="padding: 6px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f4f9'" onmouseout="this.style.background='#fff'">
+          <b>${c.name}</b> — 📞 <span style="color:#555;">${c.phone}</span>
         </div>
       `).join('');
     }
 
-    function seleccionarClienteWpp(nombre, telefono) {
-      document.getElementById('inputBuscarClienteWpp').value = `${nombre} (${telefono})`;
-      document.getElementById('telefonoClienteWppSelected').value = telefono;
-      clienteSeleccionadoParaWpp = { nombre, telefono };
-      document.getElementById('listaSugerenciasWpp').style.display = 'none';
+    function seleccionarClienteSugerido(nombre, telefono) {
+      document.getElementById('inputCobroNombre').value = nombre;
+      document.getElementById('inputCobroTelefono').value = telefono;
+      document.getElementById('listaSugerenciasClientes').style.display = 'none';
     }
 
-    // --- COBRO INTELIGENTE: F1 (Imprime), F2 (No imprime), y Wpp condicional con enlace web ---
+    // --- COBRO INTELIGENTE: F1 (Imprime), F2 (No imprime), y Wpp optimizado sin abrir múltiples links ---
     async function ejecutarCobroInteligente(imprimirPapel) {
-      let telefono = document.getElementById('telefonoClienteWppSelected').value.trim();
-      let inputVal = document.getElementById('inputBuscarClienteWpp').value.trim();
+      let telefono = document.getElementById('inputCobroTelefono').value.replace(/\s+/g, '').replace(/-/g, '').trim();
+      let nombreCliente = document.getElementById('inputCobroNombre').value.trim();
 
-      if (!telefono && inputVal) {
-        telefono = inputVal.replace(/\s+/g, '').replace(/-/g, '');
-      }
+      if (!nombreCliente) nombreCliente = "Cliente Los Fuentes";
 
       // 1. Procesamos y guardamos la venta
       const ventaObj = procesarYGuardarVenta(imprimirPapel); 
       if (!ventaObj) return;
 
-      let nombreCliente = clienteSeleccionadoParaWpp.nombre && clienteSeleccionadoParaWpp.nombre !== "Cliente" ? clienteSeleccionadoParaWpp.nombre : "Cliente Los Fuentes";
-
-      // 2. Si se especificó número de teléfono, guardamos cliente en Firestore y abrimos WhatsApp con el enlace del ticket
+      // 2. Guardar o actualizar automáticamente en Firestore si hay teléfono válido
       if (telefono && telefono.length >= 7) {
         const clienteExistente = registeredClients.find(c => c.phone === telefono);
         if (!clienteExistente && window.db && window.addDoc && window.collection) {
@@ -1513,7 +1526,7 @@ vuelva pronto</textarea></div>
             };
             await window.addDoc(window.collection(window.db, "clients"), nuevoClienteData);
           } catch (e) {
-            console.warn("Error al registrar cliente automático:", e);
+            console.warn("Error al registrar cliente automático en Firestore:", e);
           }
         }
 
@@ -1547,8 +1560,9 @@ vuelva pronto</textarea></div>
           `🔗 *Ver ticket digital y canjear puntos aquí:*\n${enlaceTicketWeb}\n\n` +
           `_¡Gracias por tu compra en Super Toñita!_`;
 
-        const urlWhatsApp = `https://wa.me/${telefono}?text=${encodeURIComponent(mensajeWhatsApp)}`;
-        window.open(urlWhatsApp, '_blank');
+        // Uso limpio de WhatsApp Web para reutilizar pestaña y evitar múltiples redirecciones pesadas
+        const urlWhatsApp = `https://web.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensajeWhatsApp)}`;
+        window.open(urlWhatsApp, 'whatsapp_web_window');
       }
     }
 
