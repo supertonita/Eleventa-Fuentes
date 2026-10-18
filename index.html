@@ -1606,7 +1606,7 @@ vuelva pronto</textarea></div>
       return ventaObj;
     }
 
-    // --- IMPRESIÓN DIRECTA CON TEXTO CLARO, LOGO Y QR GIGANTES (200x200) ---
+    // --- IMPRESIÓN DIRECTA CON TEXTO CLARO, LOGO Y QR GIGANTES VÁLIDOS PARA LA WEB ---
     function imprimirTicketTermico(venta) {
       const ancho = document.getElementById('printerWidthSelect').value;
       const widthPx = (ancho === '58mm') ? '210px' : '270px';
@@ -1621,11 +1621,14 @@ vuelva pronto</textarea></div>
       
       const totalArticulos = venta.items.reduce((acc, i) => acc + i.cantidad, 0);
       const puntosGanados = Math.floor(venta.total); 
-      const idCanjeUnico = `ST-${Date.now().toString().slice(-6)}`;
       const urlTiendaBase = "https://supertonita.github.io/mi-tienda-online/";
       
-      // Enlace directo simplificado para que el QR sea menos denso y legible por cualquier cámara al instante
-      const urlCanjePuntos = `https://supertonita.github.io/mi-tienda-online/canjear.html?id=${idCanjeUnico}&pts=${puntosGanados}`;
+      // FORMATO JSON EXACTO QUE ESPERA TU WEB EN claimPoints() PARA VALIDAR LOS PUNTOS AL ESCANEAR
+      const datosCanjeJSON = JSON.stringify({
+        id: venta.folio,
+        total: parseFloat(venta.total.toFixed(2)),
+        pts: puntosGanados
+      });
 
       const container = document.getElementById('printAreaContainer');
       container.innerHTML = `
@@ -1692,13 +1695,13 @@ vuelva pronto</textarea></div>
             <div>
               <div style="font-size: 12px; font-weight: bold; margin-bottom: 6px;">🎁 CANJEA TUS PUNTOS</div>
               <div id="qrPuntosInline" style="display:flex; justify-content:center;"></div>
-              <div style="font-size: 13px; font-weight: bold; color: #1d528d; margin-top: 6px;">✨ +${puntosGanados} Puntos (ID: ${idCanjeUnico})</div>
+              <div style="font-size: 13px; font-weight: bold; color: #1d528d; margin-top: 6px;">✨ +${puntosGanados} Puntos (${venta.folio})</div>
             </div>
           </div>
         </div>
       `;
 
-      // Códigos QR GIGANTES de 200x200 con nivel de corrección estándar para lectura ultra rápida
+      // Generación de QRs Gigantes (200x200 px) para escaneo veloz
       new QRCode(document.getElementById("qrTiendaInline"), { 
         text: urlTiendaBase, 
         width: 200, 
@@ -1706,8 +1709,9 @@ vuelva pronto</textarea></div>
         correctLevel: QRCode.CorrectLevel.M 
       });
 
+      // El QR de puntos ahora codifica el objeto JSON exacto que tu web procesa sin marcar ticket inválido
       new QRCode(document.getElementById("qrPuntosInline"), { 
-        text: urlCanjePuntos, 
+        text: datosCanjeJSON, 
         width: 200, 
         height: 200,
         correctLevel: QRCode.CorrectLevel.M 
