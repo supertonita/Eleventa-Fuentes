@@ -117,7 +117,6 @@
     .cobro-main { flex: 2; padding: 20px; background: #f4f7fa; border-right: 1px solid #c0cbd9; }
     .cobro-sidebar { flex: 1; padding: 15px; background: #e8eef5; display: flex; flex-direction: column; gap: 8px; }
 
-    /* CONTENEDOR OCULTO PARA IMPRESIÓN DIRECTA TÉRMICA SIN PDF */
     #printAreaContainer { display: none; }
     @media print {
       body * { visibility: hidden; }
@@ -128,7 +127,6 @@
 </head>
 <body>
 
-  <!-- CONTENEDOR OCULTO PARA IMPRESIÓN DIRECTA -->
   <div id="printAreaContainer"></div>
 
   <!-- PANTALLA 1: LOGIN -->
@@ -615,7 +613,6 @@ vuelva pronto</textarea></div>
         <div style="font-weight: bold; color: var(--accent-blue); margin-bottom: 5px;">COBRAR</div>
         <div style="font-size: 38px; font-weight: bold; color: #1d528d; text-align: center; margin-bottom: 12px;" id="modalCobroTotal">$0.00</div>
         
-        <!-- CAMPOS SEPARADOS DE TELÉFONO Y NOMBRE CON BUSCADOR INTELIGENTE -->
         <div style="margin: 6px 0; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid #ccc; position: relative;">
           <label style="font-size: 11px; font-weight: bold; color: #1d528d; margin-bottom: 6px; display: block;">DATOS DEL CLIENTE (BÚSQUEDA AUTOMÁTICA O NUEVO):</label>
           
@@ -630,7 +627,6 @@ vuelva pronto</textarea></div>
             </div>
           </div>
 
-          <!-- LISTA FLOTANTE DE SUGERENCIAS Y COINCIDENCIAS -->
           <div id="listaSugerenciasClientes" style="position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #7f9db9; max-height: 120px; overflow-y: auto; display: none; z-index: 50; font-size: 11px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></div>
         </div>
 
@@ -1501,7 +1497,7 @@ vuelva pronto</textarea></div>
       document.getElementById('listaSugerenciasClientes').style.display = 'none';
     }
 
-    // --- COBRO INTELIGENTE CON FOLIO UNIFICADO ---
+    // --- COBRO INTELIGENTE CON MENSAJE SERIO Y FORMAL SIN EMOJIS ---
     async function ejecutarCobroInteligente(imprimirPapel) {
       let telefono = document.getElementById('inputCobroTelefono').value.replace(/\s+/g, '').replace(/-/g, '').trim();
       let nombreCliente = document.getElementById('inputCobroNombre').value.trim();
@@ -1541,37 +1537,20 @@ vuelva pronto</textarea></div>
           }
         }
 
-        const d = new Date(ventaObj.fecha);
-        const fechaStr = d.toLocaleDateString('es-ES') + ' ' + d.toLocaleTimeString('es-US', { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase();
-        const totalArticulos = ventaObj.items.reduce((acc, i) => acc + i.cantidad, 0);
         const puntosGanados = Math.floor(ventaObj.total);
         
         // Enlace exacto a tu archivo ticket.html en GitHub Pages
         const enlaceTicketWeb = `https://supertonita.github.io/Eleventa-Fuentes/ticket.html?folio=${folioUnico}`;
 
-        let itemsTexto = ventaObj.items.map(i => 
-          `• ${i.cantidad.toFixed(2)}${i.unidad === 'LB' ? 'lb' : ''} x ${i.descripcion} ---- $${(i.cantidad * i.precio).toFixed(2)}`
-        ).join('\n');
-
+        // MENSAJE FORMAL, SOBRIO Y SIN EMOJIS
         const mensajeWhatsApp = 
-          `🧾 *${configTicket.empresa || 'Super Toñita - Los Fuentes'}*\n` +
-          `📍 ${configTicket.direccion || 'Los Fuentes'} | Tel: 503 63163274\n` +
-          `-----------------------------------\n` +
-          `📅 *Fecha:* ${fechaStr}\n` +
-          `👤 *Cajero:* ${ventaObj.cajero}\n` +
-          `📄 *Folio:* ${folioUnico}\n` +
-          `-----------------------------------\n` +
-          `*CANT. / PRODUCTO / IMPORTE*\n` +
-          `${itemsTexto}\n` +
-          `-----------------------------------\n` +
-          `📦 *Total artículos:* ${totalArticulos.toFixed(2)}\n` +
-          `💵 *TOTAL: $${ventaObj.total.toFixed(2)}*\n` +
-          `💰 *Pago:* $${ventaObj.pagaCon.toFixed(2)} | *Cambio:* $${ventaObj.cambio.toFixed(2)}\n` +
-          (ventaObj.descuento > 0 ? `🎁 *Ahorro:* $${ventaObj.descuento.toFixed(2)}\n` : '') +
-          `-----------------------------------\n` +
-          `✨ *¡Has ganado +${puntosGanados} puntos!*\n\n` +
-          `🔗 *Ver ticket digital y canjear puntos aquí:*\n${enlaceTicketWeb}\n\n` +
-          `_¡Gracias por tu compra en Super Toñita!_`;
+          `Estimado/a *${nombreCliente}*:\n\n` +
+          `Muchas gracias por su compra en *${configTicket.empresa || 'Super Toñita - Los Fuentes'}*.\n\n` +
+          `*Monto Total:* $${ventaObj.total.toFixed(2)}\n` +
+          `*Puntos Acumulados:* +${puntosGanados} pts\n\n` +
+          `*Consulte su comprobante digital y detalle de compra aquí:*\n` +
+          `${enlaceTicketWeb}\n\n` +
+          `_Estamos para servirle. Esperamos verle pronto._`;
 
         const urlWhatsApp = `https://web.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensajeWhatsApp)}`;
         window.open(urlWhatsApp, 'whatsapp_web_window');
