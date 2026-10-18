@@ -3,140 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SUPER TOÑITA - Ticket Digital</title>
+  <title>SUPER TOÑITA - Consultar Ticket Digital</title>
   <link rel="icon" type="image/png" href="LOGO.png">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBTObUeDhW8Pvx7OoRnr5BkM7Z0GXB7GrY",
+      authDomain: "pos-los-fuentes.firebaseapp.com",
+      projectId: "pos-los-fuentes",
+      storageBucket: "pos-los-fuentes.firebasestorage.app",
+      messagingSenderId: "1032870325213",
+      appId: "1:1032870325213:web:f3313d84e9cc8f6b61e434"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const folio = params.get('folio');
+
+    async function cargarTicketPorFolio() {
+      const container = document.getElementById('ticketBodyContent');
+      if (!folio) {
+        container.innerHTML = `<p style="color:red; text-align:center;">No se especificó ningún folio de ticket.</p>`;
+        return;
+      }
+
+      try {
+        const docRef = doc(db, "tickets_digitales", folio);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) {
+          container.innerHTML = `<p style="color:red; text-align:center;">Lo sentimos, el ticket <b>${folio}</b> no fue encontrado en nuestros registros.</p>`;
+          return;
+        }
+
+        const v = docSnap.data();
+        const d = new Date(v.fecha);
+        const fechaStr = d.toLocaleDateString('es-SV') + ' ' + d.toLocaleTimeString('es-US', { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase();
+        const puntosGanados = Math.floor(v.total);
+
+        let itemsHtml = v.items.map(i => `
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; padding: 6px 0; border-bottom: 1px dotted #e2e8f0;">
+            <span><b>${i.cantidad.toFixed(2)}${i.unidad === 'LB' ? 'lb' : ''}</b> ${i.descripcion}</span>
+            <span style="font-weight:bold;">$${(i.cantidad * i.precio).toFixed(2)}</span>
+          </div>
+        `).join('');
+
+        container.innerHTML = `
+          <div style="text-align:center; font-family:'Georgia', serif; font-style:italic; font-size:1.3rem; font-weight:bold; color: #1e293b; margin-bottom: 2px;">Super Toñita</div>
+          <div style="text-align:center; font-size:0.8rem; color:#64748b; margin-bottom: 1rem;">Sucursal Los Fuentes • Recibo Oficial</div>
+
+          <div style="font-size:0.85rem; color:#475569; background:#f8fafc; padding:10px; border-radius:10px; margin-bottom:1rem; border:1px solid #e2e8f0;">
+            <div><b>Folio:</b> ${v.folio}</div>
+            <div><b>Fecha:</b> ${fechaStr}</div>
+            <div><b>Cajero:</b> ${v.cajero}</div>
+            <div><b>Caja:</b> ${v.caja || 'Caja 1'}</div>
+          </div>
+
+          <div style="font-weight:bold; font-size:0.88rem; margin-bottom:0.5rem; color:#0f172a;">DETALLE DE PRODUCTOS:</div>
+          <div style="max-height: 220px; overflow-y: auto; margin-bottom: 1rem; padding-right: 4px;">
+            ${itemsHtml}
+          </div>
+
+          <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.75rem; text-align:right; font-size:0.9rem;">
+            <div>Subtotal: $${v.subtotal.toFixed(2)}</div>
+            ${v.descuento > 0 ? `<div style="color:red;">Descuento aplicado: -$${v.descuento.toFixed(2)}</div>` : ''}
+            <div style="font-size:1.3rem; font-weight:900; color:#059669; margin-top:0.3rem;">TOTAL PAGADO: $${v.total.toFixed(2)}</div>
+          </div>
+
+          <div style="text-align: center; margin-top: 1.2rem; background: #fef3c7; padding: 1rem; border-radius: 14px; border: 1px solid #fde68a;">
+            <i class="fa-solid fa-star" style="color: #d97706; font-size: 1.2rem; margin-bottom: 0.3rem;"></i>
+            <h4 style="font-size: 0.9rem; color: #d97706; font-weight: 900;">¡Ganaste +${puntosGanados} Puntos!</h4>
+            <p style="font-size: 0.78rem; color: #64748b; margin-top: 0.2rem;">Guarda este enlace o presenta tu folio en caja para futuros canjes y beneficios.</p>
+          </div>
+        `;
+
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `<p style="color:red; text-align:center;">Error al conectar con la base de datos.</p>`;
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', cargarTicketPorFolio);
+  </script>
 
   <style>
     :root {
       --bg-primary: #f1f5f9;
       --surface: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --emerald-accent: #059669;
-      --emerald-dark: #047857;
       --brand-dark: #1e293b;
-      --amber-accent: #d97706;
+      --emerald-accent: #059669;
       --border: #e2e8f0;
       --radius-lg: 20px;
-      --radius-md: 14px;
-      --shadow-card: 0 8px 24px -4px rgba(15, 23, 42, 0.06);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg-primary); color: var(--text-main); padding: 1.5rem 1rem; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-    
-    .ticket-card {
-      background: var(--surface);
-      width: 100%;
-      max-width: 420px;
-      border-radius: var(--radius-lg);
-      padding: 1.5rem;
-      box-shadow: var(--shadow-card);
-      border: 1px solid var(--border);
-    }
-
-    .brand-title {
-      font-size: 1.2rem;
-      font-weight: 900;
-      text-align: center;
-      color: var(--brand-dark);
-      text-transform: uppercase;
-      margin-bottom: 0.2rem;
-    }
-    .brand-title span { color: var(--emerald-accent); }
-    
-    .ticket-sub {
-      text-align: center;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-bottom: 1.25rem;
-      border-bottom: 1px dashed var(--border);
-      padding-bottom: 0.75rem;
-    }
-
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.88rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .total-box {
-      background: var(--bg-primary);
-      padding: 1rem;
-      border-radius: var(--radius-md);
-      margin: 1rem 0;
-      text-align: right;
-      font-size: 1.2rem;
-      font-weight: 900;
-      color: var(--emerald-accent);
-      border: 1px solid var(--border);
-    }
-
-    .btn {
-      background: var(--brand-dark);
-      color: white;
-      border: none;
-      padding: 0.85rem 1.25rem;
-      border-radius: var(--radius-md);
-      font-weight: 700;
-      font-size: 0.9rem;
-      cursor: pointer;
-      width: 100%;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      margin-top: 0.75rem;
-    }
-    .btn-emerald { background: var(--emerald-accent); }
-    .btn-emerald:hover { background: var(--emerald-dark); }
+    body { background-color: var(--bg-primary); color: #0f172a; padding: 1.5rem 1rem; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .ticket-card { background: var(--surface); width: 100%; max-width: 420px; border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.06); border: 1px solid var(--border); }
   </style>
 </head>
 <body>
 
   <div class="ticket-card">
-    <div class="brand-title">SUPER <span>TOÑITA</span></div>
-    <div class="ticket-sub">Sucursal Los Fuentes • Recibo Digital</div>
-
-    <div class="info-row">
-      <span style="color: var(--text-muted);">Folio de Compra:</span>
-      <strong id="lblFolio">---</strong>
+    <div id="ticketBodyContent">
+      <p style="text-align:center; color:#64748b;">Buscando y cargando tu ticket digital...</p>
     </div>
-    <div class="info-row">
-      <span style="color: var(--text-muted);">Fecha y Hora:</span>
-      <strong id="lblFecha">---</strong>
-    </div>
-
-    <div style="border-top: 1px dashed var(--border); margin: 1rem 0; padding-top: 0.75rem;">
-      <div style="font-size: 0.85rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--brand-dark);">RESUMEN DE PAGO</div>
-      <div class="total-box">
-        Total Pagado: $<span id="lblTotal">0.00</span>
-      </div>
-    </div>
-
-    <div style="text-align: center; margin-top: 1.25rem; background: #fef3c7; padding: 1rem; border-radius: var(--radius-md); border: 1px solid #fde68a;">
-      <i class="fa-solid fa-star" style="color: var(--amber-accent); font-size: 1.2rem; margin-bottom: 0.3rem;"></i>
-      <h4 style="font-size: 0.9rem; color: var(--amber-accent); font-weight: 900;">¡Acumulaste Puntos!</h4>
-      <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem;">Tus puntos de esta compra ya están listos o se acreditaron en tu cuenta de la app.</p>
-    </div>
-
-    <a href="index.html" class="btn btn-emerald">
-      <i class="fa-solid fa-store"></i> Ir a la Tienda Online y Canjes
-    </a>
   </div>
-
-  <script>
-    // Capturamos los parámetros que vienen en la URL del mensaje de WhatsApp
-    const params = new URLSearchParams(window.location.search);
-    const folio = params.get('folio') || 'TK-000000';
-    const total = params.get('total') || '0.00';
-
-    document.getElementById('lblFolio').innerText = folio;
-    document.getElementById('lblTotal').innerText = parseFloat(total).toFixed(2);
-    document.getElementById('lblFecha').innerText = new Date().toLocaleString('es-SV');
-  </script>
 
 </body>
 </html>
