@@ -1606,14 +1606,14 @@ vuelva pronto</textarea></div>
       return ventaObj;
     }
 
-    // --- NUEVO MÉTODO DE IMPRESIÓN DIRECTA SIN PDF ---
+    // --- IMPRESIÓN DIRECTA CON TEXTO Y LOGO GRANDES, Y QR GIGANTES (160x160) ---
     function imprimirTicketTermico(venta) {
       const ancho = document.getElementById('printerWidthSelect').value;
       const widthPx = (ancho === '58mm') ? '210px' : '270px';
       
       const logoHtml = configTicket.logoBase64 
-        ? `<div style="text-align:center;"><img src="${configTicket.logoBase64}" style="max-width: 90px; filter: grayscale(100%); margin-bottom: 4px;"></div>` 
-        : `<div style="text-align:center; font-size:28px; line-height:1;">🛒</div>`;
+        ? `<div style="text-align:center;"><img src="${configTicket.logoBase64}" style="max-width: 140px; filter: grayscale(100%); margin-bottom: 6px;"></div>` 
+        : `<div style="text-align:center; font-size:36px; line-height:1;">🛒</div>`;
 
       const d = new Date(venta.fecha);
       const fechaStr = d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -1628,18 +1628,18 @@ vuelva pronto</textarea></div>
 
       const container = document.getElementById('printAreaContainer');
       container.innerHTML = `
-        <div id="ticketPrintDoc" style="font-family: 'Courier New', Courier, monospace; width: ${widthPx}; margin: 0 auto; padding: 5px; font-size: 12px; color: #000; background: #fff;">
+        <div id="ticketPrintDoc" style="font-family: 'Courier New', Courier, monospace; width: ${widthPx}; margin: 0 auto; padding: 5px; font-size: 14px; font-weight: bold; color: #000; background: #fff;">
           ${logoHtml}
-          <div style="text-align: center; font-family: 'Georgia', serif; font-style: italic; font-size: 17px; font-weight: bold; margin-top: 2px;">${configTicket.empresa || 'Super Toñita - Los Fuentes'}</div>
+          <div style="text-align: center; font-family: 'Georgia', serif; font-style: italic; font-size: 20px; font-weight: bold; margin-top: 4px;">${configTicket.empresa || 'Super Toñita - Los Fuentes'}</div>
           
-          <div style="text-align: center; margin-top: 4px; font-size: 11px; line-height: 1.1;">
+          <div style="text-align: center; margin-top: 6px; font-size: 13px; line-height: 1.2;">
             ${configTicket.direccion ? `${configTicket.direccion}<br>` : ''}
             ${configTicket.telefono ? `${configTicket.telefono}<br>` : 'Tel: 503 63163274<br>'}
           </div>
 
-          <div style="text-align: right; margin: 6px 0 4px 0; font-size: 11px;">${fechaStr} ${horaStr}</div>
+          <div style="text-align: right; margin: 8px 0 6px 0; font-size: 13px;">${fechaStr} ${horaStr}</div>
 
-          <div style="font-size: 11px; line-height: 1.2;">
+          <div style="font-size: 13px; line-height: 1.3;">
             Cajero: ${venta.cajero}<br>
             <div style="display:flex; justify-content:space-between;">
               <span>Folio:</span>
@@ -1647,58 +1647,59 @@ vuelva pronto</textarea></div>
             </div>
           </div>
 
-          <div style="font-weight: bold; letter-spacing: -1px; margin: 3px 0;">================================</div>
+          <div style="font-weight: bold; letter-spacing: -1px; margin: 4px 0;">================================</div>
 
-          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
             <tr>
-              <td style="width: 15%;"><b>Cant.</b></td>
-              <td style="width: 55%;"><b>Desc.</b></td>
+              <td style="width: 18%;"><b>Cant.</b></td>
+              <td style="width: 52%;"><b>Desc.</b></td>
               <td style="width: 30%; text-align: right;"><b>Imp.</b></td>
             </tr>
           </table>
 
-          <div style="font-weight: bold; letter-spacing: -1px; margin: 3px 0;">================================</div>
+          <div style="font-weight: bold; letter-spacing: -1px; margin: 4px 0;">================================</div>
 
-          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
             ${venta.items.map(i => `
               <tr>
-                <td style="width: 15%; vertical-align: top;">${i.cantidad.toFixed(2)}${i.unidad === 'LB' ? 'lb' : ''}</td>
-                <td style="width: 55%; vertical-align: top;">${i.descripcion.substring(0, 15)}</td> <td style="width: 30\%; text-align: right; vertical-align: top;">$${(i.cantidad * i.precio).toFixed(2)}</td>
+                <td style="width: 18%; vertical-align: top;">${i.cantidad.toFixed(2)}${i.unidad === 'LB' ? 'lb' : ''}</td>
+                <td style="width: 52%; vertical-align: top;">${i.descripcion.substring(0, 15)}</td> <td style="width: 30\%; text-align: right; vertical-align: top;">$${(i.cantidad * i.precio).toFixed(2)}</td>
               </tr>
             `).join('')}
           </table>
 
-          <div style="margin-top: 8px; font-size: 11px; text-align: center;">
+          <div style="margin-top: 10px; font-size: 13px; text-align: center;">
             No. de Articulos: ${totalArticulos.toFixed(2)}
           </div>
 
-          <div style="margin-top: 8px; text-align: right; font-size: 12px; line-height: 1.3;">
-            <div style="font-size: 15px; font-weight: bold;">Total: $${venta.total.toFixed(2)}</div>
+          <div style="margin-top: 10px; text-align: right; font-size: 14px; line-height: 1.4;">
+            <div style="font-size: 18px; font-weight: bold;">Total: $${venta.total.toFixed(2)}</div>
             <div style="font-weight: bold;">Pago Con: $${venta.pagaCon.toFixed(2)}</div>
             <div style="font-weight: bold;">Su Cambio: $${venta.cambio.toFixed(2)}</div>
             ${venta.descuento > 0 ? `<div style="font-weight: bold;">Usted ahorro: $${venta.descuento.toFixed(2)}</div>` : ''}
           </div>
 
-          <div style="text-align: center; margin-top: 8px; font-size: 11px; white-space: pre-line;">
+          <div style="text-align: center; margin-top: 10px; font-size: 13px; white-space: pre-line;">
             ${configTicket.mensajePie || 'Gracias por su compra\nvuelva pronto'}
           </div>
 
-          <div style="margin-top: 10px; text-align: center; border-top: 1px dashed #000; padding-top: 6px;">
-            <div style="margin-bottom: 6px;">
-              <div style="font-size: 10px; font-weight: bold; margin-bottom: 2px;">🌐 TIENDA ONLINE</div>
-              <div id="qrTiendaInline"></div>
+          <div style="margin-top: 12px; text-align: center; border-top: 2px dashed #000; padding-top: 8px;">
+            <div style="margin-bottom: 10px;">
+              <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">🌐 VISITA NUESTRA TIENDA ONLINE</div>
+              <div id="qrTiendaInline" style="display:flex; justify-content:center;"></div>
             </div>
             <div>
-              <div style="font-size: 10px; font-weight: bold; margin-bottom: 2px;">🎁 CANJEA TUS PUNTOS</div>
-              <div id="qrPuntosInline"></div>
-              <div style="font-size: 10px; font-weight: bold; color: #1d528d; margin-top: 2px;">${puntosGanados} Puntos (ID: ${idCanjeUnico})</div>
+              <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">🎁 CANJEA TUS PUNTOS</div>
+              <div id="qrPuntosInline" style="display:flex; justify-content:center;"></div>
+              <div style="font-size: 12px; font-weight: bold; color: #1d528d; margin-top: 4px;">${puntosGanados} Puntos (ID: ${idCanjeUnico})</div>
             </div>
           </div>
         </div>
       `;
 
-      new QRCode(document.getElementById("qrTiendaInline"), { text: urlTiendaBase, width: 95, height: 95 });
-      new QRCode(document.getElementById("qrPuntosInline"), { text: datosQRJson, width: 95, height: 95 });
+      // Códigos QR GIGANTES de 160x160 para lectura ultra rápida con la cámara del celular
+      new QRCode(document.getElementById("qrTiendaInline"), { text: urlTiendaBase, width: 160, height: 160 });
+      new QRCode(document.getElementById("qrPuntosInline"), { text: datosQRJson, width: 160, height: 160 });
 
       setTimeout(() => {
         window.print();
