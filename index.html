@@ -1606,14 +1606,14 @@ vuelva pronto</textarea></div>
       return ventaObj;
     }
 
-    // --- IMPRESIÓN DIRECTA CON TEXTO Y LOGO GRANDES, Y QR GIGANTES (160x160) ---
+    // --- IMPRESIÓN DIRECTA CON TEXTO CLARO, LOGO Y QR GIGANTES (200x200) ---
     function imprimirTicketTermico(venta) {
       const ancho = document.getElementById('printerWidthSelect').value;
       const widthPx = (ancho === '58mm') ? '210px' : '270px';
       
       const logoHtml = configTicket.logoBase64 
-        ? `<div style="text-align:center;"><img src="${configTicket.logoBase64}" style="max-width: 140px; filter: grayscale(100%); margin-bottom: 6px;"></div>` 
-        : `<div style="text-align:center; font-size:36px; line-height:1;">🛒</div>`;
+        ? `<div style="text-align:center;"><img src="${configTicket.logoBase64}" style="max-width: 150px; filter: grayscale(100%); margin-bottom: 6px;"></div>` 
+        : `<div style="text-align:center; font-size:38px; line-height:1;">🛒</div>`;
 
       const d = new Date(venta.fecha);
       const fechaStr = d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -1621,10 +1621,11 @@ vuelva pronto</textarea></div>
       
       const totalArticulos = venta.items.reduce((acc, i) => acc + i.cantidad, 0);
       const puntosGanados = Math.floor(venta.total); 
-      const idCanjeUnico = `ST-${Date.now()}`;
+      const idCanjeUnico = `ST-${Date.now().toString().slice(-6)}`;
       const urlTiendaBase = "https://supertonita.github.io/mi-tienda-online/";
       
-      const datosQRJson = JSON.stringify({ pts: puntosGanados, id: idCanjeUnico });
+      // Enlace directo simplificado para que el QR sea menos denso y legible por cualquier cámara al instante
+      const urlCanjePuntos = `https://supertonita.github.io/mi-tienda-online/canjear.html?id=${idCanjeUnico}&pts=${puntosGanados}`;
 
       const container = document.getElementById('printAreaContainer');
       container.innerHTML = `
@@ -1683,23 +1684,34 @@ vuelva pronto</textarea></div>
             ${configTicket.mensajePie || 'Gracias por su compra\nvuelva pronto'}
           </div>
 
-          <div style="margin-top: 12px; text-align: center; border-top: 2px dashed #000; padding-top: 8px;">
-            <div style="margin-bottom: 10px;">
-              <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">🌐 VISITA NUESTRA TIENDA ONLINE</div>
+          <div style="margin-top: 14px; text-align: center; border-top: 2px dashed #000; padding-top: 10px;">
+            <div style="margin-bottom: 12px;">
+              <div style="font-size: 12px; font-weight: bold; margin-bottom: 6px;">🌐 VISITA NUESTRA TIENDA ONLINE</div>
               <div id="qrTiendaInline" style="display:flex; justify-content:center;"></div>
             </div>
             <div>
-              <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">🎁 CANJEA TUS PUNTOS</div>
+              <div style="font-size: 12px; font-weight: bold; margin-bottom: 6px;">🎁 CANJEA TUS PUNTOS</div>
               <div id="qrPuntosInline" style="display:flex; justify-content:center;"></div>
-              <div style="font-size: 12px; font-weight: bold; color: #1d528d; margin-top: 4px;">${puntosGanados} Puntos (ID: ${idCanjeUnico})</div>
+              <div style="font-size: 13px; font-weight: bold; color: #1d528d; margin-top: 6px;">✨ +${puntosGanados} Puntos (ID: ${idCanjeUnico})</div>
             </div>
           </div>
         </div>
       `;
 
-      // Códigos QR GIGANTES de 160x160 para lectura ultra rápida con la cámara del celular
-      new QRCode(document.getElementById("qrTiendaInline"), { text: urlTiendaBase, width: 160, height: 160 });
-      new QRCode(document.getElementById("qrPuntosInline"), { text: datosQRJson, width: 160, height: 160 });
+      // Códigos QR GIGANTES de 200x200 con nivel de corrección estándar para lectura ultra rápida
+      new QRCode(document.getElementById("qrTiendaInline"), { 
+        text: urlTiendaBase, 
+        width: 200, 
+        height: 200,
+        correctLevel: QRCode.CorrectLevel.M 
+      });
+
+      new QRCode(document.getElementById("qrPuntosInline"), { 
+        text: urlCanjePuntos, 
+        width: 200, 
+        height: 200,
+        correctLevel: QRCode.CorrectLevel.M 
+      });
 
       setTimeout(() => {
         window.print();
