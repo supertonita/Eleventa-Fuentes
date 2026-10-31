@@ -56,28 +56,28 @@
     body { background-color: #f4f6f9; color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
 
     .overlay-screen { position: fixed; inset: 0; background: #f2f3f5; display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .card-dialog { background: #fff; width: 420px; padding: 25px; border-radius: 6px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); border: 2px solid var(--accent-blue); }
+    .card-dialog { background: #fff; width: 420px; padding: 25px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); border: 2px solid var(--accent-blue); }
     .card-dialog h2 { color: var(--accent-blue); text-align: center; margin-bottom: 15px; font-size: 18px; }
-    .field-group { margin-bottom: 12px; }
+    .field-group { margin-bottom: 20px; }
     .field-group label { display: block; font-weight: bold; margin-bottom: 4px; color: #333; }
-    .field-group input, .field-group select, .field-group textarea { width: 100%; padding: 8px; border: 1px solid #7f9db9; outline: none; border-radius: 3px; font-size: 13px; }
-    .btn-main { width: 100%; padding: 10px; background: linear-gradient(to bottom, #4c77a6, #1d528d); color: #fff; border: none; font-weight: bold; font-size: 14px; border-radius: 4px; cursor: pointer; margin-top: 5px; }
+    .field-group input, .field-group select, .field-group textarea { width: 100%; padding: 8px; border: 1px solid #7f9db9; outline: none; border-radius: 15px; font-size: 13px; }
+    .btn-main { width: 100%; padding: 10px; background: linear-gradient(to bottom, #4c77a6, #1d528d); color: #fff; border: none; font-weight: bold; font-size: 14px; border-radius: 10px; cursor: pointer; margin-top: 5px; }
 
-    .top-menu { background: linear-gradient(to bottom, #f0f3f7, #cbd3df); border-bottom: 1px solid var(--border-color); padding: 4px 8px; display: flex; justify-content: space-between; align-items: center; }
+    .top-menu { background: linear-gradient(to bottom, #f0f3f7, #cbd3df); border-bottom: 13px solid var(--border-color); padding: 10px 8px; display: flex; justify-content: space-between; align-items: center; }
     .brand-title { font-weight: bold; font-size: 16px; color: #333; display: flex; align-items: center; gap: 6px; }
     .brand-title span { color: var(--accent-blue); font-style: italic; }
     .nav-buttons { display: flex; gap: 2px; }
-    .nav-btn { background: linear-gradient(to bottom, #ffffff, #e2e7ee); border: 1px solid #99a5b4; border-radius: 3px; padding: 4px 10px; cursor: pointer; font-weight: 600; color: #222; display: flex; align-items: center; gap: 4px; }
+    .nav-btn { background: linear-gradient(to bottom, #ffffff, #e2e7ee); border: 1px solid #99a5b4; border-radius: 15px; padding: 10px 5px; cursor: pointer; font-weight: 600; color: #222; display: flex; align-items: center; gap: 4px; }
     .nav-btn.active { background: linear-gradient(to bottom, #dbe4f0, #b0c2d8); border-color: var(--accent-blue); }
 
     .net-status { padding: 2px 8px; border-radius: 10px; font-weight: bold; font-size: 11px; color: #fff; }
     .net-online { background-color: #28a745; }
 
-    .ticket-tabs-bar { background: #d0d7e1; border-bottom: 1px solid var(--border-color); padding: 3px 8px 0 8px; display: flex; gap: 4px; align-items: center; overflow-x: auto; }
-    .tab-ticket { background: #b8c4d3; border: 1px solid #8e9bb0; border-bottom: none; border-radius: 4px 4px 0 0; padding: 4px 10px; cursor: pointer; font-weight: bold; color: #333; display: flex; align-items: center; gap: 6px; }
+    .ticket-tabs-bar { background: #d0d7e1; border-radius: 10px solid var(--border-color); padding: 3px 8px 0 8px; display: flex; gap: 4px; align-items: center; overflow-x: auto; }
+    .tab-ticket { background: #b8c4d3; border-radius: 10px solid #8e9bb0; border-bottom: none; border-radius: 10px 10px 5px 5px; padding: 4px 10px; cursor: pointer; font-weight: bold; color: #333; display: flex; align-items: center; gap: 6px; }
     .tab-ticket.active { background: #fff; color: var(--accent-blue); border-bottom: 1px solid #fff; margin-bottom: -1px; }
     .btn-close-tab { background: transparent; border: none; font-weight: bold; color: #a00; cursor: pointer; margin-left: 4px; font-size: 12px; }
-    .btn-new-ticket { background: #28a745; color: #fff; border: none; border-radius: 3px; padding: 3px 8px; font-weight: bold; cursor: pointer; font-size: 11px; }
+    .btn-new-ticket { background: #28a745; color: #fff; border: none; border-radius: 15px; padding: 3px 8px; font-weight: bold; cursor: pointer; font-size: 11px; }
 
     main { flex: 1; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
     .view-section { display: none; flex: 1; flex-direction: column; height: 100%; overflow-y: auto; }
@@ -90,8 +90,8 @@
     .sub-menu-bar { background: #e5eaf1; border-bottom: 1px solid var(--border-color); padding: 4px 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .op-btn { background: linear-gradient(to bottom, #ffffff, #e1e6ed); border: 1px solid #9aa7b6; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
-    .barcode-section { background: #eef2f7; padding: 6px 12px; border-bottom: 1px solid #d0d7e1; }
-    .barcode-input-container { display: flex; align-items: center; background: #fff; border: 1px solid #7f9db9; padding: 2px 6px; width: 100%; }
+    .barcode-section { background: #eef2f7; padding: 6px 12px; border-bottom: 2px solid #d0d7e1; }
+    .barcode-input-container { display: flex; align-items: center; background: #fff; border: 2px solid #7f9db9; border-radius: 15px; padding: 2px 6px; width: 100%; }
     .barcode-input-container input { width: 100%; border: none; outline: none; font-size: 14px; padding: 4px; }
     .table-container { flex: 1; overflow-y: auto; background: #fff; }
     table { width: 100%; border-collapse: collapse; text-align: left; }
@@ -99,14 +99,14 @@
     td { padding: 6px; border-bottom: 1px solid #e1e6ed; border-right: 1px solid #f0f3f7; }
     tr.selected-row { background-color: #dbe8f6 !important; font-weight: bold; border-left: 4px solid var(--accent-blue); }
 
-    footer { background: #e5eaf1; border-top: 1px solid var(--border-color); padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; }
-    .btn-cobrar { background: linear-gradient(to bottom, #ffffff, #d9e3f0); border: 2px solid #1d528d; border-radius: 4px; padding: 8px 16px; font-size: 14px; font-weight: bold; color: #1d528d; cursor: pointer; }
+    footer { background: #e5eaf1; border-top: 3px solid var(--border-color); padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; }
+    .btn-cobrar { background: linear-gradient(to bottom, #ffffff, #d9e3f0); border: 2px solid #1d528d; border-radius: 10px; padding: 8px 16px; font-size: 20px; font-weight: bold; color: #1d528d; cursor: pointer; }
 
     .form-container-eleventa { padding: 15px 25px; flex: 1; overflow-y: auto; background: #f8fafc; }
     .section-subtitle { font-size: 14px; font-weight: bold; color: var(--yellow-bar); margin-bottom: 10px; border-bottom: 1px solid #ebd492; padding-bottom: 3px; }
     .grid-form { display: grid; grid-template-columns: 140px 1fr; row-gap: 8px; align-items: center; max-width: 650px; }
     .grid-form label { text-align: right; padding-right: 10px; font-weight: 500; color: #333; }
-    .grid-form input[type="text"], .grid-form input[type="number"], .grid-form select { padding: 4px 6px; border: 1px solid #7f9db9; outline: none; border-radius: 2px; width: 100%; }
+    .grid-form input[type="text"], .grid-form input[type="number"], .grid-form select { padding: 4px 6px; border: 1px solid #7f9db9; outline: none; border-radius: 20px; width: 100%; }
 
     .reportes-top-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 15px; }
     .top-box { background: #f8fafc; border: 1px solid #d0d7e1; padding: 10px; border-radius: 4px; max-height: 250px; overflow-y: auto; }
@@ -114,7 +114,7 @@
 
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; }
     .modal-overlay.active { display: flex; }
-    .cobro-dialog { background: #e8eef5; border: 1px solid #7f9db9; width: 680px; display: flex; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; }
+    .cobro-dialog { background: #e8eef5; border: 1px solid #7f9db9; width: 680px; display: flex; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-radius: 15px; overflow: hidden; }
     .cobro-main { flex: 2; padding: 20px; background: #f4f7fa; border-right: 1px solid #c0cbd9; }
     .cobro-sidebar { flex: 1; padding: 15px; background: #e8eef5; display: flex; flex-direction: column; gap: 8px; }
 
@@ -135,7 +135,7 @@
     <div class="card-dialog">
       <h2>POS - Los Fuentes</h2>
       <div class="field-group">
-        <label>Usuario / Cajero:</label>
+        <label>Usuario:</label>
         <select id="loginUser" onchange="cambioSelectLoginUser()"></select>
       </div>
       <div class="field-group">
@@ -168,16 +168,16 @@
 
   <!-- BARRA SUPERIOR DE NAVEGACIÓN -->
   <div class="top-menu">
-    <div class="brand-title">eleventa <span>Super Toñita - Los Fuentes</span></div>
+    <div class="brand-title">Super Toñita Los Fuentes<span></span></div>
     <div class="nav-buttons">
-      <button class="nav-btn active" id="navF1" onclick="switchNav('posView')">🛒 F1 Ventas</button>
-      <button class="nav-btn" id="navF3" onclick="switchNav('productsView')">📦 F3 Productos</button>
-      <button class="nav-btn" id="navPromos" onclick="switchNav('promosView')">🏷️ Promos</button>
-      <button class="nav-btn" id="navHistorial" onclick="switchNav('historialView')">📜 Historial Tickets</button>
-      <button class="nav-btn" id="navCorte" onclick="switchNav('corteView')">📋 Corte</button>
-      <button class="nav-btn" id="navReportes" onclick="switchNav('reportesView')">📊 Reportes</button>
-      <button class="nav-btn" id="navUsuarios" onclick="switchNav('usuariosView')">👥 Usuarios</button>
-      <button class="nav-btn" id="navConfig" onclick="switchNav('configView')">⚙️ Configuración</button>
+      <button class="nav-btn active" id="navF1" onclick="switchNav('posView')"> F1 Ventas</button>
+      <button class="nav-btn" id="navF3" onclick="switchNav('productsView')"> F3 Productos</button>
+      <button class="nav-btn" id="navPromos" onclick="switchNav('promosView')">Promos</button>
+      <button class="nav-btn" id="navHistorial" onclick="switchNav('historialView')"> Historial Tickets</button>
+      <button class="nav-btn" id="navCorte" onclick="switchNav('corteView')"> Corte</button>
+      <button class="nav-btn" id="navReportes" onclick="switchNav('reportesView')"> Reportes</button>
+      <button class="nav-btn" id="navUsuarios" onclick="switchNav('usuariosView')"> Usuarios</button>
+      <button class="nav-btn" id="navConfig" onclick="switchNav('configView')"> Configuración</button>
     </div>
     <div style="font-size: 11px; color: #444; display: flex; align-items: center; gap: 10px;">
       <span id="netStatusBadge" class="net-status net-online">LOS FUENTES</span>
@@ -237,7 +237,7 @@
             <div style="font-size: 11px; color: #555;">Subtotal: <span id="subtotalVal">$0.00</span></div>
             <div style="font-size: 26px; font-weight: bold; color: #1d528d; line-height: 1;" id="totalVal">$0.00</div>
           </div>
-          <button class="btn-cobrar" onclick="abrirModalCobro()">💳 F12 - Cobrar</button>
+          <button class="btn-cobrar" onclick="abrirModalCobro()"> F12 - Cobrar</button>
         </div>
       </footer>
     </section>
@@ -416,7 +416,7 @@
         </div>
 
         <div style="background: #f8fafc; border: 1px solid #d0d7e1; padding: 15px; border-radius: 4px;">
-          <h3 style="color: var(--accent-blue); margin-bottom: 10px;">🛍️ Ventas del Turno Actual</h3>
+          <h3 style="color: var(--accent-blue); margin-bottom: 10px;"> Ventas del Turno Actual</h3>
           <div style="display:flex; justify-content:space-between; padding:4px 0;"><span>Ventas Totales (Efec + Tarj):</span> <span id="corteVentasTotales">$0.00</span></div>
           <div id="corteGananciaContainer" style="display:flex; justify-content:space-between; padding:4px 0; font-weight:bold; color:#28a745;"><span>Ganancia Estimada:</span> <span id="corteGanancia">$0.00</span></div>
           <button class="btn-main" style="background:#d9534f; margin-top:15px;" onclick="cerrarTurno()">🔒 Cerrar Turno y Entregar Caja</button>
@@ -443,7 +443,7 @@
           <label><b>Hasta:</b> <input type="date" id="repFechaHasta" onchange="actualizarReportes()"></label>
         </div>
 
-        <button class="op-btn" style="background: #28a745; color: #fff;" onclick="exportarReporteExcelDetallado()">📥 Exportar Reporte a Excel</button>
+        <button class="op-btn" style="background: #28a745; color: #fff;" onclick="exportarReporteExcelDetallado()"> Exportar Reporte a Excel</button>
       </div>
 
       <div style="padding: 15px;">
@@ -460,15 +460,15 @@
 
         <div class="reportes-top-grid">
           <div class="top-box">
-            <h4>🏆 Top Productos Más Vendidos</h4>
+            <h4> Top Productos Más Vendidos</h4>
             <table><thead><tr><th>Producto</th><th>Cant.</th><th>Total ($)</th></tr></thead><tbody id="topVendidosBody"></tbody></table>
           </div>
           <div class="top-box">
-            <h4>💎 Top Productos Mayor Ganancia</h4>
+            <h4> Top Productos Mayor Ganancia</h4>
             <table><thead><tr><th>Producto</th><th>Ganancia ($)</th></tr></thead><tbody id="topGananciaBody"></tbody></table>
           </div>
           <div class="top-box">
-            <h4>📁 Ventas por Departamento</h4>
+            <h4> Ventas por Departamento</h4>
             <table><thead><tr><th>Depto</th><th>Venta</th><th>Ganancia</th></tr></thead><tbody id="topDeptosBody"></tbody></table>
           </div>
         </div>
@@ -507,13 +507,13 @@
 
             <div class="field-group" style="background: #fff; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
               <label style="margin-bottom: 6px; color: var(--accent-blue);">Permisos de Módulos:</label>
-              <label style="font-weight:normal;"><input type="checkbox" id="permVentas" checked> 🛒 Módulo de Ventas</label>
-              <label style="font-weight:normal;"><input type="checkbox" id="permProductos"> 📦 Catálogo de Productos</label>
-              <label style="font-weight:normal;"><input type="checkbox" id="permHistorial"> 📜 Historial de Tickets</label>
-              <label style="font-weight:normal;"><input type="checkbox" id="permCorte"> 📋 Corte de Caja</label>
-              <label style="font-weight:normal;"><input type="checkbox" id="permReportes"> 📊 Reportes y Gráficas</label>
-              <label style="font-weight:normal;"><input type="checkbox" id="permUsuarios"> 👥 Gestión de Usuarios</label>
-              <label style="font-weight:normal;"><input type="checkbox" id="permConfig"> ⚙️ Configuración</label>
+              <label style="font-weight:normal;"><input type="checkbox" id="permVentas" checked>  Módulo de Ventas</label>
+              <label style="font-weight:normal;"><input type="checkbox" id="permProductos">  Catálogo de Productos</label>
+              <label style="font-weight:normal;"><input type="checkbox" id="permHistorial">  Historial de Tickets</label>
+              <label style="font-weight:normal;"><input type="checkbox" id="permCorte">  Corte de Caja</label>
+              <label style="font-weight:normal;"><input type="checkbox" id="permReportes">  Reportes y Gráficas</label>
+              <label style="font-weight:normal;"><input type="checkbox" id="permUsuarios">  Gestión de Usuarios</label>
+              <label style="font-weight:normal;"><input type="checkbox" id="permConfig">  Configuración</label>
             </div>
 
             <button type="submit" class="btn-main" style="margin-top: 10px;">✔ Guardar Usuario en la Nube</button>
@@ -664,6 +664,14 @@ vuelva pronto</textarea></div>
   </div>
 
   <script>
+    // --- RECUPERAR O INICIALIZAR TICKETS DESDE LOCALSTORAGE ---
+    let ticketsGuardados = JSON.parse(localStorage.getItem('pos_tickets_pendientes_fuentes') || 'null');
+    
+    let tickets = (ticketsGuardados && ticketsGuardados.length > 0) ? ticketsGuardados : [
+      { id: 1, nombre: "Ticket 1", cart: [], descuento: 0, tipoDescuento: 'porcentaje', selectedIndex: -1 }
+    ];
+    let activeTicketId = tickets[0].id;
+
     let usuarios = [
       { id: "francisco_reyes", nombre: "FRANCISCO REYES", pass: "1234", rol: "admin", cajaAsignada: "Caja 1", permisos: {ventas:true, productos:true, historial:true, corte:true, reportes:true, usuarios:true, config:true} }
     ];
@@ -672,19 +680,6 @@ vuelva pronto</textarea></div>
     let productos = JSON.parse(localStorage.getItem('pos_productos_cache_fuentes') || "[]");
     let promociones = JSON.parse(localStorage.getItem('pos_promos_fuentes') || "[]");
     let registeredClients = JSON.parse(localStorage.getItem('pos_clientes_fidelidad_cache_fuentes') || "[]");
-    
-    // 💾 Persistencia automática de tickets pendientes en navegador
-    let tickets = JSON.parse(localStorage.getItem('pos_tickets_pendientes_fuentes') || 'null');
-    if (!tickets || tickets.length === 0) {
-      tickets = [{ id: 1, nombre: "Ticket 1", cart: [], descuento: 0, tipoDescuento: 'porcentaje', selectedIndex: -1 }];
-    }
-    let activeTicketId = parseInt(localStorage.getItem('pos_active_ticket_id_fuentes')) || tickets[0].id;
-
-    function guardarEstadoTickets() {
-      localStorage.setItem('pos_tickets_pendientes_fuentes', JSON.stringify(tickets));
-      localStorage.setItem('pos_active_ticket_id_fuentes', activeTicketId);
-    }
-
     let historialVentas = JSON.parse(localStorage.getItem('pos_historial_ventas_fuentes') || "[]");
     let codigoEdicionAnterior = null;
     let itemEditandoPrecioIndex = null;
@@ -704,6 +699,11 @@ vuelva pronto</textarea></div>
     let ticketSeleccionadoPreview = null;
     let chartSalesBarInstance = null;
     let chartDeptosInstance = null;
+
+    // --- FUNCIÓN PARA GUARDAR EL ESTADO DE LOS TICKETS EN MEMORIA LOCAL ---
+    function guardarTicketsEnMemoria() {
+      localStorage.setItem('pos_tickets_pendientes_fuentes', JSON.stringify(tickets));
+    }
 
     function normalizarCodigo(cadena) {
       if (!cadena) return "";
@@ -1072,15 +1072,9 @@ vuelva pronto</textarea></div>
       `).join('');
       const activeT = getActiveTicket();
       document.getElementById('lblActiveTicketName').innerText = activeT ? activeT.nombre : 'Ticket 1';
-      guardarEstadoTickets();
     }
 
-    function seleccionarTicket(id) { 
-      activeTicketId = id; 
-      renderTicketTabs(); 
-      renderCart(); 
-      focusBarcode(); 
-    }
+    function seleccionarTicket(id) { activeTicketId = id; renderTicketTabs(); renderCart(); focusBarcode(); }
     
     function abrirModalNuevoTicket() {
       document.getElementById('inputNombreNuevoTicket').value = `Ticket ${tickets.length + 1}`;
@@ -1103,9 +1097,8 @@ vuelva pronto</textarea></div>
       const newId = Date.now();
       tickets.push({ id: newId, nombre: nombreTicket, cart: [], descuento: 0, tipoDescuento: 'porcentaje', selectedIndex: -1 });
       activeTicketId = newId;
-      renderTicketTabs(); 
-      renderCart(); 
-      guardarEstadoTickets();
+      renderTicketTabs(); renderCart(); 
+      guardarTicketsEnMemoria();
       cerrarModalNuevoTicket();
     }
 
@@ -1114,10 +1107,8 @@ vuelva pronto</textarea></div>
       if (tickets.length <= 1) return alert("Debe mantener al menos un ticket abierto.");
       tickets = tickets.filter(t => t.id !== id);
       activeTicketId = tickets[tickets.length - 1].id;
-      renderTicketTabs(); 
-      renderCart(); 
-      guardarEstadoTickets();
-      focusBarcode();
+      renderTicketTabs(); renderCart(); focusBarcode();
+      guardarTicketsEnMemoria();
     }
 
     function agregarProductoSubmit(e) { if (e) e.preventDefault(); agregarProductoEnter(); }
@@ -1161,9 +1152,8 @@ vuelva pronto</textarea></div>
           t.cart.push({ ...prod, precioAplicado, cantidad }); 
           t.selectedIndex = t.cart.length - 1; 
         }
-        renderCart(); 
-        renderTicketTabs();
-        guardarEstadoTickets();
+        renderCart(); renderTicketTabs();
+        guardarTicketsEnMemoria();
       } else { alert("Producto no encontrado."); }
       inputEl.value = '';
       focusBarcode();
@@ -1206,7 +1196,6 @@ vuelva pronto</textarea></div>
       document.getElementById('subtotalVal').innerText = `$${subtotal.toFixed(2)}`;
       document.getElementById('totalVal').innerText = `$${total.toFixed(2)}`;
       document.getElementById('totalItemsCount').innerText = count.toFixed(2);
-      guardarEstadoTickets();
     }
 
     function abrirModalEditarPrecio(idx) {
@@ -1241,7 +1230,7 @@ vuelva pronto</textarea></div>
       t.cart[itemEditandoPrecioIndex].precioManual = nuevoPrecio;
       t.cart[itemEditandoPrecioIndex].precioAplicado = nuevoPrecio;
       renderCart();
-      guardarEstadoTickets();
+      guardarTicketsEnMemoria();
       cerrarModalEditarPrecio();
     }
 
@@ -1253,16 +1242,16 @@ vuelva pronto</textarea></div>
       t.cart[idx].cantidad += delta;
       if (t.cart[idx].cantidad <= 0) { t.cart.splice(idx, 1); t.selectedIndex = Math.max(0, idx - 1); }
       renderCart();
-      guardarEstadoTickets();
+      guardarTicketsEnMemoria();
     }
-
+    
     function eliminarItem(idx) {
       const t = getActiveTicket();
       if (idx < 0 || idx >= t.cart.length) return;
       t.cart.splice(idx, 1);
       t.selectedIndex = Math.max(0, idx - 1);
       renderCart();
-      guardarEstadoTickets();
+      guardarTicketsEnMemoria();
     }
 
     document.addEventListener('keydown', (e) => {
@@ -1718,12 +1707,8 @@ vuelva pronto</textarea></div>
 
       cerrarModalCobro();
       t.cart = []; t.selectedIndex = -1;
-      
-      // Limpiar y actualizar persistencia tras cobro exitoso
-      guardarEstadoTickets();
-      renderTicketTabs(); 
-      renderCart(); 
-      focusBarcode();
+      renderTicketTabs(); renderCart(); focusBarcode();
+      guardarTicketsEnMemoria();
       actualizarCorteCaja();
 
       return ventaObj;
@@ -2271,7 +2256,7 @@ vuelva pronto</textarea></div>
               existencia 
             };
 
-            const idx = productos.findIndex(p => productoCoincideConCodigo(p, primerNombre = primerCodigo));
+            const idx = productos.findIndex(p => productoCoincideConCodigo(p, primerCodigo));
             if (idx > -1) {
               productos[idx] = nuevo;
             } else {
