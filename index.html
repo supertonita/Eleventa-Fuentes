@@ -1586,6 +1586,7 @@
       guardarTicketsEnMemoria();
     }
 
+    // ⚡ ESCUCHADOR DE TECLADO BLINDADO Y CORREGIDO
     document.addEventListener('keydown', (e) => {
       const posActive = document.getElementById('posView').classList.contains('active');
       const modalBuscador = document.getElementById('buscadorModal').classList.contains('active');
@@ -1595,6 +1596,25 @@
       const modalPagoLuz = document.getElementById('pagoLuzModal').classList.contains('active');
       const barcodeInput = document.getElementById('barcodeInput');
       const t = getActiveTicket();
+
+      // Prioridad absoluta para el Modal de Cobro (F1 y F2)
+      if (modalCobro) {
+        if (e.key === 'F1') { 
+          e.preventDefault(); 
+          ejecutarCobroInteligente(true); 
+          return; 
+        }
+        if (e.key === 'F2') { 
+          e.preventDefault(); 
+          ejecutarCobroInteligente(false); 
+          return; 
+        }
+        if (e.key === 'Escape') { 
+          e.preventDefault();
+          cerrarModalCobro(); 
+          return; 
+        }
+      }
 
       if (modalPagoLuz) {
         if (e.key === 'Enter') { e.preventDefault(); agregarReciboLuzAlCarrito(); return; }
@@ -1606,12 +1626,6 @@
         if (e.key === 'ArrowUp') { e.preventDefault(); if (buscadorResultados.length > 0) { buscadorSelectedIndex = Math.max(0, buscadorSelectedIndex - 1); renderTablaBuscadorModal(); } return; }
         if (e.key === 'Enter') { e.preventDefault(); seleccionarProdBuscadorDirecto(buscadorSelectedIndex); return; }
         if (e.key === 'Escape') { cerrarBuscadorModal(); return; }
-      }
-
-      if (modalCobro) {
-        if (e.key === 'F1') { e.preventDefault(); ejecutarCobroInteligente(true); return; }
-        if (e.key === 'F2') { e.preventDefault(); ejecutarCobroInteligente(false); return; }
-        if (e.key === 'Escape') { cerrarModalCobro(); return; }
       }
 
       if (modalEditarPrecio) {
@@ -1632,7 +1646,7 @@
         if (e.key === 'Delete' || e.key === 'Supr') { e.preventDefault(); if (t.selectedIndex >= 0) eliminarItem(t.selectedIndex); return; }
       }
 
-      if (e.key === 'F1') { e.preventDefault(); switchNav('posView'); }
+      if (e.key === 'F1' && !modalCobro) { e.preventDefault(); switchNav('posView'); }
       if (e.key === 'F3') { e.preventDefault(); switchNav('productsView'); }
       if (e.key === 'F5') { e.preventDefault(); abrirModalNuevoTicket(); }
       if (e.key === 'F11') { e.preventDefault(); abrirBuscadorModal(); }
@@ -2053,6 +2067,7 @@
       return ventaObj;
     }
 
+    // ⚡ FUNCIÓN DE IMPRESIÓN BLINDADA CONTRA FALLOS DE LIBRERÍA QR EXTERNA
     function imprimirTicketTermico(venta) {
       const ancho = document.getElementById('printerWidthSelect').value;
       const widthPx = (ancho === '58mm') ? '210px' : '270px';
@@ -2152,19 +2167,25 @@
         </div>
       `;
 
-      new QRCode(document.getElementById("qrTiendaInline"), { 
-        text: urlTiendaBase, 
-        width: 200, 
-        height: 200,
-        correctLevel: QRCode.CorrectLevel.M 
-      });
+      try {
+        if (typeof QRCode !== 'undefined') {
+          new QRCode(document.getElementById("qrTiendaInline"), { 
+            text: urlTiendaBase, 
+            width: 200, 
+            height: 200,
+            correctLevel: QRCode.CorrectLevel.M 
+          });
 
-      new QRCode(document.getElementById("qrPuntosInline"), { 
-        text: datosCanjeJSON, 
-        width: 200, 
-        height: 200,
-        correctLevel: QRCode.CorrectLevel.M 
-      });
+          new QRCode(document.getElementById("qrPuntosInline"), { 
+            text: datosCanjeJSON, 
+            width: 200, 
+            height: 200,
+            correctLevel: QRCode.CorrectLevel.M 
+          });
+        }
+      } catch (err) {
+        console.warn("Aviso: No se pudo generar el código QR, continuando con la impresión normal...", err);
+      }
 
       setTimeout(() => {
         window.print();
