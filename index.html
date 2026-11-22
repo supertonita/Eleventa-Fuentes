@@ -119,6 +119,27 @@
     .cobro-main { flex: 2; padding: 20px; background: #f4f7fa; border-right: 1px solid #c0cbd9; }
     .cobro-sidebar { flex: 1; padding: 15px; background: #e8eef5; display: flex; flex-direction: column; gap: 8px; }
 
+    /* Confirmación visual rápida */
+    #toastConfirmacion {
+      position: fixed;
+      top: 56px;
+      right: 16px;
+      z-index: 2500;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 12px;
+      color: #fff;
+      background: #198754;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+    #toastConfirmacion.warn { background: #b45309; }
+    #toastConfirmacion.info { background: #1d528d; }
+
     #printAreaContainer { display: none; }
     @media print {
       body * { visibility: hidden; }
@@ -129,6 +150,7 @@
 </head>
 <body>
 
+  <div id="toastConfirmacion">✅ <span id="toastConfirmacionTexto">Listo</span></div>
   <div id="printAreaContainer"></div>
 
   <!-- PANTALLA 1: LOGIN -->
@@ -184,7 +206,7 @@
     <div style="font-size: 11px; color: #444; display: flex; align-items: center; gap: 10px;">
       <span id="netStatusBadge" class="net-status net-online">MODO OPTIMIZADO</span>
       <div>Atiende: <b id="lblCajeroName">FRANCISCO REYES</b> (<span id="lblCajaBadge">Caja 1</span>)</div>
-      <button onclick="sincronizarDatosCargaUnica()" style="margin-left: 4px; cursor: pointer; padding: 2px 6px;">🔄 Sincronizar</button>
+      <button id="btnSincronizarProd" onclick="sincronizarDatosCargaUnica(true)" style="margin-left: 4px; cursor: pointer; padding: 2px 6px;">🔄 Sincronizar</button>
       <button onclick="cerrarSesion()" style="margin-left: 4px; cursor: pointer;">[Salir]</button>
     </div>
   </div>
@@ -743,8 +765,8 @@
         </div>
       </div>
       <div class="cobro-sidebar">
-        <button class="op-btn" style="background: #dbe8f6; border-color: #1d528d; padding:7px;" onclick="ejecutarCobroInteligente(true)">🖨️ F1 - Cobrar e Imprimir</button>
-        <button class="op-btn" style="padding:7px;" onclick="ejecutarCobroInteligente(false)">⚡ F2 - Cobrar sin Imprimir</button>
+        <button id="btnCobroF1" class="op-btn" style="background: #dbe8f6; border-color: #1d528d; padding:7px;" onclick="ejecutarCobroInteligente(true)">🖨️ F1 - Cobrar e Imprimir</button>
+        <button id="btnCobroF2" class="op-btn" style="padding:7px;" onclick="ejecutarCobroInteligente(false)">⚡ F2 - Cobrar sin Imprimir</button>
         <button class="op-btn" style="margin-top: auto;" onclick="cerrarModalCobro()">🚫 ESC - Cancelar</button>
       </div>
     </div>
@@ -773,6 +795,8 @@
 
     let codigoEdicionAnterior = null;
     let itemEditandoPrecioIndex = null;
+    let cobroEnProceso = false;
+    let toastTimeoutId = null;
 
     let configTicket = JSON.parse(localStorage.getItem('pos_config_ticket_fuentes') || 'null') || {
       empresa: "Super Toñita - Los Fuentes",
@@ -789,6 +813,29 @@
     let ticketSeleccionadoPreview = null;
     let chartSalesBarInstance = null;
     let chartDeptosInstance = null;
+
+    // ✅ CONFIRMACIÓN VISUAL EN PANTALLA
+    function mostrarConfirmacionVisual(mensaje, tipo = 'ok') {
+      const toast = document.getElementById('toastConfirmacion');
+      const txt = document.getElementById('toastConfirmacionTexto');
+      if (!toast || !txt) return;
+      txt.innerText = mensaje;
+      toast.classList.remove('warn', 'info');
+      if (tipo === 'warn') toast.classList.add('warn');
+      if (tipo === 'info') toast.classList.add('info');
+      toast.style.display = 'flex';
+      if (toastTimeoutId) clearTimeout(toastTimeoutId);
+      toastTimeoutId = setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2800);
+    }
+
+    // ✅ NUEVOS ÍTEMS SIEMPRE AL PRINCIPIO DEL TICKET
+    function insertarItemAlPrincipio(ticketObj, itemData) {
+      if (!ticketObj || !Array.isArray(ticketObj.cart)) return;
+      ticketObj.cart.unshift(itemData);
+      ticketObj.selectedIndex = 0;
+    }
 
     // 🕒 FUNCIÓN OPTIMIZADA: FECHA Y HORA DE EL SALVADOR (UTC-6) STRICT
     function obtenerFechaHoraLocalISO() {
@@ -899,6 +946,7 @@
         localStorage.setItem('pos_deptos_fuentes', JSON.stringify(departamentos));
         renderDepartamentosSelect();
         input.value = '';
+        mostrarConfirmacionVisual(`Departamento "${val}" agregado`);
       }
     }
 
@@ -907,6 +955,7 @@
       if (isNaN(val) || val < 0) return alert("Ingrese un valor de comisión válido.");
       comisionLuzConfig = val;
       localStorage.setItem('pos_comision_luz_fuentes', comisionLuzConfig);
+      mostrarConfirmacionVisual(`Comisión de luz: $${comisionLuzConfig.toFixed(2)}`);
       alert(`¡Comisión por recibo de luz actualizada a $${comisionLuzConfig.toFixed(2)}!`);
     }
 
@@ -954,11 +1003,11 @@
         existencia: 9999
       };
 
-      t.cart.push(itemLuz);
-      t.selectedIndex = t.cart.length - 1;
+      insertarItemAlPrincipio(t, itemLuz);
       renderCart();
       renderTicketTabs();
       guardarTicketsEnMemoria();
+      mostrarConfirmacionVisual(`Recibo de luz agregado al inicio ($${totalConComision.toFixed(2)})`);
       cerrarModalPagoLuz();
     }
 
@@ -972,6 +1021,7 @@
 
       promociones.push({ id: Date.now(), titulo, tipo, filtro, cantidadMin, valor });
       localStorage.setItem('pos_promos_fuentes', JSON.stringify(promociones));
+      mostrarConfirmacionVisual(`Promo "${titulo}" activada`);
       alert("¡Promoción por cantidad activada correctamente!");
       document.getElementById('formPromo').reset();
       renderTablaPromos();
@@ -982,6 +1032,7 @@
         promociones = promociones.filter(p => p.id !== id);
         localStorage.setItem('pos_promos_fuentes', JSON.stringify(promociones));
         renderTablaPromos();
+        mostrarConfirmacionVisual("Promoción eliminada", "info");
       }
     }
 
@@ -1029,6 +1080,7 @@
       });
 
       localStorage.setItem('pos_promos_cal_fuentes', JSON.stringify(promocionesCalendario));
+      mostrarConfirmacionVisual(`Oferta "${titulo}" programada`);
       alert("¡Promoción programada por calendario exitosamente!");
       document.getElementById('formPromoCal').reset();
       renderTablaPromosCalendario();
@@ -1194,21 +1246,48 @@
       if (window.db && window.setDoc && window.doc) {
         try {
           await window.setDoc(window.doc(window.db, "configuracion", "ticket"), configTicket);
+          mostrarConfirmacionVisual("Datos del ticket guardados en la nube");
           alert("¡Datos del ticket guardados en Los Fuentes!");
         } catch (err) {
           console.warn("Error al guardar en nube:", err);
+          mostrarConfirmacionVisual("Datos del ticket guardados localmente", "warn");
           alert("¡Datos del ticket guardados localmente!");
         }
       }
     }
 
-    // ⚡ CARGA ÚNICA CON GETDOCS AL INICIAR PARA AHORRAR LECTURAS EN FIRESTORE
-    async function sincronizarDatosCargaUnica() {
-      if (!window.db) return;
-      try {
-        console.log("Iniciando carga única optimizada getDocs...");
+    // ✅ SINCRONIZACIÓN ENFOCADA EN CARGAR NUEVOS PRODUCTOS DESDE LA APP DE ADMIN
+    async function sincronizarDatosCargaUnica(mostrarAvisoManual = false) {
+      const btnSync = document.getElementById('btnSincronizarProd');
+      if (btnSync) btnSync.disabled = true;
 
-        // 1. Cargar Usuarios
+      if (!window.db || !window.getDocs || !window.collection) {
+        if (btnSync) btnSync.disabled = false;
+        if (mostrarAvisoManual) mostrarConfirmacionVisual("Firebase no disponible, usando caché local", "warn");
+        return;
+      }
+
+      try {
+        if (mostrarAvisoManual) mostrarConfirmacionVisual("Cargando nuevos productos de Admin...", "info");
+
+        const prodsSnap = await window.getDocs(window.collection(window.db, "productos"));
+        let loadedProds = [];
+        prodsSnap.forEach(docSnap => {
+          if (docSnap.data()) loadedProds.push(docSnap.data());
+        });
+
+        const previosCount = productos.length;
+        const nuevosDetectados = loadedProds.filter(np =>
+          !productos.some(ep => obtenerPrimerCodigo(ep.codigo) === obtenerPrimerCodigo(np.codigo))
+        ).length;
+
+        if (loadedProds.length > 0) {
+          productos = loadedProds;
+          localStorage.setItem('pos_productos_cache_fuentes', JSON.stringify(productos));
+          renderTablaCatalogo();
+        }
+
+        // Cargar usuarios solo si aún no hay usuarios sincronizados desde la nube
         const usersSnap = await window.getDocs(window.collection(window.db, "usuarios"));
         let loadedUsers = [];
         usersSnap.forEach(docSnap => { if (docSnap.data()) loadedUsers.push(docSnap.data()); });
@@ -1223,41 +1302,10 @@
           }
           usuarios = loadedUsers;
           renderLoginUsers();
+          renderTablaUsuarios();
         }
 
-        // 2. Cargar Productos
-        const prodsSnap = await window.getDocs(window.collection(window.db, "productos"));
-        let loadedProds = [];
-        prodsSnap.forEach(docSnap => loadedProds.push(docSnap.data()));
-        if (loadedProds.length > 0) {
-          productos = loadedProds;
-          localStorage.setItem('pos_productos_cache_fuentes', JSON.stringify(productos));
-          renderTablaCatalogo();
-        }
-
-        // 3. Cargar Ventas
-        const ventasSnap = await window.getDocs(window.collection(window.db, "ventas"));
-        let loadedVentas = [];
-        ventasSnap.forEach(docSnap => { if (docSnap.data()) loadedVentas.push(docSnap.data()); });
-        if (loadedVentas.length > 0) {
-          loadedVentas.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-          historialVentas = loadedVentas;
-          localStorage.setItem('pos_historial_ventas_fuentes', JSON.stringify(historialVentas));
-
-          let maxFolioNum = 0;
-          historialVentas.forEach(v => {
-            if (v.folio && v.folio.startsWith('TK-')) {
-              let num = parseInt(v.folio.replace('TK-', ''));
-              if (!isNaN(num) && num > maxFolioNum) maxFolioNum = num;
-            }
-          });
-          if (maxFolioNum >= correlativoTicketActual) {
-            correlativoTicketActual = maxFolioNum + 1;
-            localStorage.setItem('pos_correlativo_ticket_fuentes', correlativoTicketActual);
-          }
-        }
-
-        // 4. Cargar Clientes
+        // Cargar clientes de fidelidad
         const clientsSnap = await window.getDocs(window.collection(window.db, "clients"));
         let loadedClients = [];
         clientsSnap.forEach(docSnap => {
@@ -1271,9 +1319,21 @@
           localStorage.setItem('pos_clientes_fidelidad_cache_fuentes', JSON.stringify(registeredClients));
         }
 
-        console.log("¡Sincronización inicial por getDocs completada exitosamente!");
+        if (mostrarAvisoManual) {
+          const msg = nuevosDetectados > 0
+            ? `Catálogo actualizado: +${nuevosDetectados} producto(s) nuevo(s) (${productos.length} total)`
+            : `Catálogo sincronizado (${productos.length} productos al día)`;
+          mostrarConfirmacionVisual(msg, "ok");
+        } else if (previosCount === 0 && productos.length > 0) {
+          mostrarConfirmacionVisual(`Catálogo cargado (${productos.length} productos)`);
+        }
       } catch (err) {
         console.warn("Sin respuesta de red, operando con caché local:", err);
+        if (mostrarAvisoManual) {
+          mostrarConfirmacionVisual("Sin conexión: usando productos en caché local", "warn");
+        }
+      } finally {
+        if (btnSync) btnSync.disabled = false;
       }
     }
 
@@ -1296,7 +1356,7 @@
       const checkFirebase = setInterval(() => {
         if (window.db && window.getDocs && window.collection && window.doc && window.getDoc) {
           clearInterval(checkFirebase);
-          sincronizarDatosCargaUnica();
+          sincronizarDatosCargaUnica(false);
         }
       }, 200);
     });
@@ -1343,6 +1403,7 @@
         document.getElementById('aperturaCajaScreen').style.display = 'flex';
       }
       document.getElementById('loginPass').value = '';
+      mostrarConfirmacionVisual(`Turno listo: ${usuarioActual.nombre} (${cajaActualSeleccionada})`);
     }
 
     function aplicarPermisosNavegacion() {
@@ -1372,6 +1433,7 @@
       };
       localStorage.setItem(turnoKey, JSON.stringify(nuevoTurno));
       document.getElementById('aperturaCajaScreen').style.display = 'none';
+      mostrarConfirmacionVisual(`Turno abierto en ${cajaActualSeleccionada} ($${fondo.toFixed(2)})`);
       switchNav('posView');
     }
 
@@ -1437,6 +1499,7 @@
       activeTicketId = newId;
       renderTicketTabs(); renderCart(); 
       guardarTicketsEnMemoria();
+      mostrarConfirmacionVisual(`Ticket "${nombreTicket}" creado`);
       cerrarModalNuevoTicket();
     }
 
@@ -1474,16 +1537,20 @@
 
       if (prod) {
         const idx = t.cart.findIndex(i => productoCoincideConCodigo(i, codigoBusqueda));
-        if (idx > -1) { 
-          t.cart[idx].cantidad += cantidad; 
-          t.selectedIndex = idx; 
-        } else { 
-          t.cart.push({ ...prod, cantidad }); 
-          t.selectedIndex = t.cart.length - 1; 
+        if (idx > -1) {
+          const itemActualizado = { ...t.cart[idx], cantidad: t.cart[idx].cantidad + cantidad };
+          t.cart.splice(idx, 1);
+          insertarItemAlPrincipio(t, itemActualizado);
+        } else {
+          insertarItemAlPrincipio(t, { ...prod, cantidad });
         }
         renderCart(); renderTicketTabs();
         guardarTicketsEnMemoria();
-      } else { alert("Producto no encontrado."); }
+        mostrarConfirmacionVisual(`${prod.descripcion} (${cantidad}) al inicio`);
+      } else {
+        mostrarConfirmacionVisual(`Código "${codigoBusqueda}" no encontrado`, "warn");
+        alert("Producto no encontrado.");
+      }
       inputEl.value = '';
       focusBarcode();
     }
@@ -1563,6 +1630,7 @@
       t.cart[itemEditandoPrecioIndex].precioAplicado = nuevoPrecio;
       renderCart();
       guardarTicketsEnMemoria();
+      mostrarConfirmacionVisual(`Precio actualizado a $${nuevoPrecio.toFixed(4)}`);
       cerrarModalEditarPrecio();
     }
 
@@ -1586,7 +1654,7 @@
       guardarTicketsEnMemoria();
     }
 
-    // ⚡ ESCUCHADOR DE TECLADO BLINDADO Y CORREGIDO
+    // ⚡ ESCUCHADOR DE TECLADO BLINDADO PARA F1, F2 Y MODALES
     document.addEventListener('keydown', (e) => {
       const posActive = document.getElementById('posView').classList.contains('active');
       const modalBuscador = document.getElementById('buscadorModal').classList.contains('active');
@@ -1597,22 +1665,27 @@
       const barcodeInput = document.getElementById('barcodeInput');
       const t = getActiveTicket();
 
-      // Prioridad absoluta para el Modal de Cobro (F1 y F2)
+      // Blindaje prioritario para F1 y F2 dentro del modal de cobro
       if (modalCobro) {
-        if (e.key === 'F1') { 
-          e.preventDefault(); 
-          ejecutarCobroInteligente(true); 
-          return; 
-        }
-        if (e.key === 'F2') { 
-          e.preventDefault(); 
-          ejecutarCobroInteligente(false); 
-          return; 
-        }
-        if (e.key === 'Escape') { 
+        if (e.key === 'F1') {
           e.preventDefault();
-          cerrarModalCobro(); 
-          return; 
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          if (!cobroEnProceso) ejecutarCobroInteligente(true);
+          return;
+        }
+        if (e.key === 'F2') {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          if (!cobroEnProceso) ejecutarCobroInteligente(false);
+          return;
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          cerrarModalCobro();
+          return;
         }
       }
 
@@ -1651,7 +1724,7 @@
       if (e.key === 'F5') { e.preventDefault(); abrirModalNuevoTicket(); }
       if (e.key === 'F11') { e.preventDefault(); abrirBuscadorModal(); }
       if (e.key === 'F12') { e.preventDefault(); abrirModalCobro(); }
-    });
+    }, true);
 
     function abrirBuscadorModal() {
       document.getElementById('buscadorModal').classList.add('active');
@@ -1725,6 +1798,7 @@
       }
 
       codigoEdicionAnterior = null;
+      mostrarConfirmacionVisual(`Producto "${nuevo.descripcion}" guardado`);
       alert("¡Producto guardado y actualizado correctamente!");
       mostrarSubVistaProd('catalogo');
     }
@@ -1755,6 +1829,7 @@
         localStorage.setItem('pos_productos_cache_fuentes', JSON.stringify(productos));
         if (window.db && window.deleteDoc && window.doc) await window.deleteDoc(window.doc(window.db, "productos", primerCodigo));
         renderTablaCatalogo();
+        mostrarConfirmacionVisual("Producto eliminado", "info");
       }
     }
 
@@ -1820,6 +1895,7 @@
       if (window.db && window.setDoc && window.doc) {
         try {
           await window.setDoc(window.doc(window.db, "usuarios", id), nuevoUsuario);
+          mostrarConfirmacionVisual(`Cajero ${nombre} guardado`);
           alert(`¡Cajero ${nombre} guardado y sincronizado!`);
         } catch (err) {
           console.warn("Guardado localmente, error en nube:", err);
@@ -1853,9 +1929,18 @@
       `).join('');
     }
 
+    function setBotonesCobroBloqueados(bloqueado) {
+      cobroEnProceso = bloqueado;
+      const b1 = document.getElementById('btnCobroF1');
+      const b2 = document.getElementById('btnCobroF2');
+      if (b1) b1.disabled = bloqueado;
+      if (b2) b2.disabled = bloqueado;
+    }
+
     function abrirModalCobro() {
       const t = getActiveTicket();
       if (t.cart.length === 0) return alert("El carrito está vacío.");
+      setBotonesCobroBloqueados(false);
       let subtotal = t.cart.reduce((a,i) => a + ((i.precioAplicado !== undefined ? i.precioAplicado : i.precio) * i.cantidad), 0);
       let total = Math.max(0, subtotal);
       document.getElementById('modalCobroTotal').innerText = `$${total.toFixed(2)}`;
@@ -1891,7 +1976,11 @@
       }
     }
 
-    function cerrarModalCobro() { document.getElementById('cobroModal').classList.remove('active'); focusBarcode(); }
+    function cerrarModalCobro() {
+      setBotonesCobroBloqueados(false);
+      document.getElementById('cobroModal').classList.remove('active');
+      focusBarcode();
+    }
     
     function calcularCambioCobro() {
       const totalStr = document.getElementById('modalCobroTotal').innerText.replace('$', '').trim();
@@ -1949,6 +2038,9 @@
     }
 
     async function ejecutarCobroInteligente(imprimirPapel) {
+      if (cobroEnProceso) return;
+      setBotonesCobroBloqueados(true);
+
       let telefono = document.getElementById('inputCobroTelefono').value.replace(/\s+/g, '').replace(/-/g, '').trim();
       let nombreCliente = document.getElementById('inputCobroNombre').value.trim();
 
@@ -1957,7 +2049,14 @@
       const folioUnico = generarSiguienteFolioCorrelativo();
 
       const ventaObj = procesarYGuardarVentaConFolio(imprimirPapel, folioUnico); 
-      if (!ventaObj) return;
+      if (!ventaObj) {
+        setBotonesCobroBloqueados(false);
+        return;
+      }
+
+      mostrarConfirmacionVisual(
+        `Cobrado ${ventaObj.folio} ($${ventaObj.total.toFixed(2)})${imprimirPapel ? ' · Imprimiendo' : ''}`
+      );
 
       if (window.db && window.setDoc && window.doc) {
         try {
@@ -2003,6 +2102,8 @@
         const urlWhatsAppApp = `whatsapp://send?phone=${telefonoCompleto}&text=${encodeURIComponent(mensajeWhatsApp)}`;
         window.location.href = urlWhatsAppApp;
       }
+
+      setTimeout(() => setBotonesCobroBloqueados(false), 350);
     }
 
     function procesarYGuardarVentaConFolio(imprimir, folioUnico) {
@@ -2292,6 +2393,7 @@
           }
         }
 
+        mostrarConfirmacionVisual(`Ticket ${ticketSeleccionadoPreview.folio} anulado`, "warn");
         alert(`¡El ticket ${ticketSeleccionadoPreview.folio} fue anulado correctamente y descontado de la caja!`);
         filtrarHistorialTickets();
         seleccionarTicketPreview(0);
@@ -2354,6 +2456,7 @@
 
     function cerrarTurno() {
       if (confirm(`¿Deseas cerrar el turno de la ${cajaActualSeleccionada} y entregar la caja?`)) {
+        mostrarConfirmacionVisual(`Turno cerrado en ${cajaActualSeleccionada}`, "info");
         alert("Turno cerrado con éxito. Se ha limpiado el acumulado.");
         let turnoKey = `pos_turno_fuentes_${cajaActualSeleccionada.replace(/\s+/g, '_')}`;
         localStorage.removeItem(turnoKey);
@@ -2640,6 +2743,7 @@
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Utilidad_Por_Producto");
       XLSX.writeFile(wb, `Reporte_Utilidad_LosFuentes_${obtenerFechaHoyYMD()}.xlsx`);
+      mostrarConfirmacionVisual("Reporte Excel exportado");
     }
 
     function importarExcelProductos(e) {
@@ -2716,7 +2820,7 @@
           }
 
           localStorage.setItem('pos_productos_cache_fuentes', JSON.stringify(productos));
-          
+          mostrarConfirmacionVisual(`Importados: ${importadosCount} producto(s)`);
           alert(`¡Proceso de importación completado!\n\n✅ Productos actualizados / agregados: ${importadosCount}\n⚠️ Filas omitidas (sin código/nombre): ${omitidosCount}`);
           renderTablaCatalogo();
 
